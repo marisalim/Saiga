@@ -101,4 +101,17 @@ Original error was: dlopen(/anaconda3/envs/medaka/lib/python3.6/site-packages/nu
 ```
 python setuppipe.py
 ```
-1. 
+2. Basecall
+```
+cd Pipeline_scripts
+bash guppy_basecalling_wrapper.sh [MinKNOW dat dir] [output dir] [Pipeline home path]
+```
+3. Run rest of pipeline with devo_wrapper.py
+```
+# qcat version
+python devo_wrapper.py --datID 20190906 --demult qcat --samps 20190906_sample_list.txt 
+
+# minibar version
+python devo_wrapper.py --datID 20190906 --demult minibar --samps 20190906_sample_list.txt --mbseqs 20190906_primerindex.txt 
+
+```
