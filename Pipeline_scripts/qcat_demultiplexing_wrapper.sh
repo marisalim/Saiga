@@ -17,14 +17,15 @@ source ~/.bashrc
 
 mydatasetID=$1
 myfastqfile=$2 # concatenated, filtered fastq file
-myminscore=$3
+myminscore=$3 # 0-100 scale
 mybarcodekit=$4 #PBC001
 myoutput_dir=$5
-mytoppath=$6
+basecallpath=$6
 
-cd 2b_Qcat_demultiplexed
+cd 2b_demultiplexed
 if [ ! -d '$myoutput_dir' ]; then mkdir $myoutput_dir; fi
 
 # Run Qcat
 cd $myoutput_dir
-qcat -f $mytoppath/$myfastqfile -b $myoutput -k $mybarcodekit --min-score $myminscore --trim --epi2me --tsv > $myoutput/$datasetID.tsv
+qcat -f $basecallpath/$myfastqfile -b $myoutput_dir -k $mybarcodekit --min-score $myminscore --trim --epi2me
+# --tsv > $myoutput/$datasetID.tsv
