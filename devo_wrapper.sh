@@ -111,7 +111,7 @@ def Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, datase
         if filename in index_samp_dict:
             newfilename = index_samp_dict[filename]
             print('Old file name:', filename, '; New file name:', newfilename)
-            os.rename(demultiplexed_path + files, demultiplexed_path + newfilename+'.fastq')
+            os.rename(demultiplexed_path + files, demultiplexed_path + datasetID + newfilename+'.fastq')
         else:
             print(filename, ': this index not used, will not rename file')
 
@@ -168,41 +168,214 @@ def MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, dat
     time.sleep(0.5)
     print('######################################################################')
 
-# 4. NanoFilt by quality and length
+# 3. NanoFilt by quality and length
+def filter_demultiplexed_reads(demultiplexed_path, datasetID, samp_files, min_filter_quality, read_len_buffer):
+    print('######################################################################')
+    print('Filter demultiplexed reads with NanoFilt.')
+    print('This step is to remove low quality reads and any adapters, reads')
+    print('that got trimmed too short after indexes/primers removed,')
+    print('and any chimeric reads that are too long')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
 
-START HERE!!!!
+    for i in samp_files.index:
+        myfastqfile = demultiplexed_path + datasetID + samp_files.at[i,'sampleID'] + '.fastq'
+        filteredfilename = demultiplexed_path + datasetID + samp_files.at[i,'sampleID'] + '_filtered.fastq'
+
+        # print(myfastqfile)
+        # print(filteredfilename)
+
+        gene_length = samp_files.at[i, 'gene_len'].item() # the .item() is to make numpy int a native py int to match type() of read_len_buffer
+        min_filter_len = gene_length - int(read_len_buffer)
+        max_filter_len = gene_length + int(read_len_buffer)
+
+        log_name = demultiplexed_path + datasetID + samp_files.at[i,'sampleID'] + '.log'
+
+        rawfq_counter = 0
+        for line in open(myfastqfile, 'r'):
+            rawfq_counter += 1
+        raw_reads = rawfq_counter/4
+
+        # note: renaming unk.fastq and non.fastq files so they work with script for NanoPlot (need the '_' because used as a delimiter)
+            # want to see read stats for the uncategorized reads
+        commands = """
+        echo 'For demultiplexed files in: {0}'
+        echo 'Filtering: {1}'
+        echo 'Quality score: {3}'
+        echo 'Min length: {4}'
+        echo 'Max length: {5}'
+        echo 'Log file name: {6}'
+        echo '-------------------------'
+        cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
+        echo ' avg base quality filter done '
+        echo 'Deleting un-filtered file!'
+        rm {1}
+        echo 'Renaming uncategorized read files...'
+        if [ -f '{0}{7}unk.fastq' ]; then mv {0}{7}unk.fastq {0}{7}unk_notfiltered.fastq; fi
+        if [ -f '{0}none.fastq' ]; then mv {0}none.fastq {0}none_notfiltered.fastq; fi
+        """.format(demultiplexed_path, myfastqfile, filteredfilename, min_filter_quality, min_filter_len, max_filter_len, log_name, datasetID)
+
+        command_list = commands.split('\n')
+        for cmd in command_list:
+            os.system(cmd)
+            # pipe_log_file.write(cmd)
+            # pipe_log_file.write('\n')
+
+        # count reads in raw vs. filtered
+        # calculate reads retained vs. lost after filtering
+        print('How many reads were lost after filtering?')
+        filteredfq_counter = 0
+        for line in open(filteredfilename, 'r'):
+            filteredfq_counter += 1
+        filtered_reads = filteredfq_counter/4
+        print('Raw reads: ', raw_reads)
+        print('Filtered reads: ', filtered_reads)
+
+        lost_reads = raw_reads - filtered_reads
+        percent_lost = round((lost_reads/raw_reads)*100, 3)
+        percent_retained = round((1-(lost_reads/raw_reads))*100, 3)
+        print('% reads lost: ', percent_lost)
+        print('% reads retained: ', percent_retained)
+
+    print('Done filtering demultiplexed reads.')
+    sys.stdout.flush()
+    time.sleep(0.5)
+    print('######################################################################')
+
+# 4. Build subsets
+#     - options: none (will analyze full dataset demult reads), int (will build random subsets using this num of reads)
+def build_subs(scripthome, demultiplexed_path, datasetID, samp_files, mysub, subdir):
+    print('######################################################################')
+    print('Create data subset for each sample')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
+
+    for i in samp_files.index:
+        myfastqfile = datasetID + samp_files.at[i,'sampleID'] + '_filtered'
+
+        commands="""
+        echo 'Running script: {0}/seqtk_subsetter.sh'
+        echo 'Subsetting from: {5}{1}'
+        echo 'Output directory: {4}'
+        echo '-------------------------------------------------------------'
+        bash {0}/seqtk_subsetter.sh {2} {3} {1} {4} {5}
+        echo '-------------------------------------------------------------'
+        """.format(scripthome, myfastqfile, datasetID, mysub, subdir, demultiplexed_path)
+
+        command_list = commands.split('\n')
+        for cmd in command_list:
+            os.system(cmd)
+            # pipe_log_file.write(cmd)
+            # pipe_log_file.write('\n')
+
+        print('######################################################################')
+
+# 5. NanoPlot demult and filtered reads
+def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
+    print('######################################################################')
+    print('Create NanoPlots for all demultiplexed sample fastq files.')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
+
+    for thefastqs in os.listdir(toplotpath):
+        if 'fastq' in thefastqs:
+            mysampname = thefastqs.split('.')[0]
+
+            commands = """
+            echo 'For demultiplexed files in: {0}'
+            echo 'Plotting NanoPlot for sample: {2}.fastq'
+            echo 'NanoPlot outputs: {1}'
+            echo 'NanoPlot outputs ID: {2}_dem'
+            echo '-------------------------------------------------------------'
+            NanoPlot --fastq {0}/{2}.fastq -o {1} -p {2}_dem --plots kde
+            """.format(toplotpath, NanoPlot_demultiplexedout_path, mysampname)
+
+            command_list = commands.split('\n')
+            for cmd in command_list:
+                os.system(cmd)
+                # pipe_log_file.write(cmd)
+                # pipe_log_file.write('\n')
+
+    print('Done plotting NanoPlots.')
+    sys.stdout.flush()
+    time.sleep(0.5)
+    print('Take a look at the read length, read quality distributions, and number of reads per sample before continuing.')
+    sys.stdout.flush()
+    time.sleep(0.5)
+    print('######################################################################')
+
+# 6. Generate clusters, count reads per cluster
+!!!! START HERE!!!!!!
+def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub):
+    print('######################################################################')
+    print('Read clustering with isONclust.')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
+
+    for i in samp_files.index:
+
+        mysamp = datasetID + samp_files.at[i, 'sampleID']
+        fastqfile = demultiplexed_path +     datasetID+samp_files.at[i, 'sampleID']+'.fastq'
+
+
+        # TODO
+        # have to test - might not need to write cluster parser now, have to check what the output of write_fastq is
+        # BUT, if you want a parser, copy/edit the clstr_parser_isonclust.py script
+        isONclust --fastq roedeer_filt_1K.fastq --ont --outfolder roedeer_filt_1K.isonclust
+
+        isONclust write_fastq —clusters final_clusters.csv --fastq ../roedeer_filtered.fastq --outfolder fastqs --N 1
 
 
 
-# 5. Build subsets - set flag for this,
-#     - options: none (will analyze full dataset demult reads), int (will build subsets using this num of reads)
-#     - if int, then decide whether you want a nested vs. random subset.
+        commands = """
+        if [ ! -d '{1}/3_isONclust_readclustering/{2}_readclstrs' ]; \
+        then mkdir {1}/3_isONclust_readclustering/{2}_readclstrs; fi
+        echo 'Running script: {0}/clstr_parser_isonclust.py'
+        echo 'Input fastq: {4}'
+        echo 'Output rep seq fasta: {5}'
+        echo '-------------------------------------------------------------'
+
+        python {0}/clstr_parser_isonclust.py --sampname {3} \
+        --input_fastq {4} --output_fasta {5} \
+        --out_dir {1}/3_isONclust_readclustering/{2}_readclstrs/
+        """.format(scripthome, toppath, datasetID, mysamp, fastqfile, output_name)
+
+
+# TODO
+        # add in read cluster counter
 
 
 
 
-# 6. NanoPlot demult and filtered reads
+        command_list = commands.split('\n')
+        for cmd in command_list:
+            os.system(cmd)
+            # pipe_log_file.write(cmd)
+            # pipe_log_file.write('\n')
+
+    print('Done with read clustering.')
+    print('######################################################################')
 
 
 
-# 7. Generate clusters, count reads per cluster
+
+# 7. Make consensus sequence from clusters
 
 
 
-
-# 8. Make consensus sequence from clusters
-
-
-
-# 9. Check for reverse complement
+# 8. Check for reverse complement
 
 
 
-# 10. Error correct consensus
+# 9. Error correct consensus
 
 
 
-# 11. Check species ID
+# 10. Check species ID
 
 
 
@@ -213,9 +386,9 @@ START HERE!!!!
 
 
 def main():
-    print('Main function organizer...')
+    print('Run pipeline!')
 
-    # set up args
+    ## set up args
     parser = argparse.ArgumentParser(
         description='''Developer master MinION barcoding pipeline for species ID script''',
         epilog='''Example: python devo_wrapper.py
@@ -224,53 +397,69 @@ def main():
         --samps 20190906_sample_list.txt
         --mbseqs 20190906_primerindex.txt
         --
-        '''
-)
+        ''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
     parser.add_argument('--demult', help='Options: qcat, minibar', required=True)
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
     parser.add_argument('--mbseqs', help='For MiniBar demultiplexing, input barcode and primer seqs')
-    # parser.add_argument('--')
+    parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)', required=True)
     # parser.add_argument()
     # parser.add_argument()
-
     args=parser.parse_args()
     arg_dict=vars(args)
 
-    # set up commonly used paths
+    ## set up commonly used paths and files
     toppath = os.getcwd() #this gets current working directory path
     scripthome = toppath + '/Pipeline_scripts'
     basecallout_path = toppath + '/1_basecalled/' + arg_dict['datID'] + '_guppybasecallouts'
     NanoPlot_basecallout_path = toppath + '/1_basecalled/' + arg_dict['datID'] + '_raw_filt_NanoPlots/'
     demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
-    NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
 
-    # Run functions!
+    samp_files=pd.read_csv(toppath + '/2a_samp_lists/' + str(arg_dict['samps']), sep='\t', header=None)
+    samp_files.columns=['sampleID', 'gene', 'gene_len', 'indexID']
+    primerindex=toppath + '/2a_samp_lists/' + str(arg_dict['mbseqs'])
+
+    ## Run functions!
     # raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, arg_dict['datID'])
 
     if arg_dict['demult'] == 'qcat':
         barcode_kit='PBC001'
         my_qcat_minscore='99'
-        samp_files=pd.read_csv(toppath + '/2a_samp_lists/' + str(arg_dict['samps']), sep='\t', header=None)
-        samp_files.columns=['sampleID', 'gene', 'gene_len', 'indexID']
         # print('Check input files...')
         # print(samp_files)
         # Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
-
     if arg_dict['demult'] == 'minibar':
         myindex_editdist='2'
         myprimer_editdist='11'
-        samp_files=pd.read_csv(toppath + '/2a_samp_lists/' + str(arg_dict['samps']), sep='\t', header=None)
-        samp_files.columns=['sampleID', 'gene', 'gene_len', 'indexID']
-        primerindex=toppath + '/2a_samp_lists/' + str(arg_dict['mbseqs'])
         # print('Check input files...')
         # print(samp_files)
         # print(pd.read_csv(primerindex, sep='\t'))
         # print(demultiplexed_path)
         # MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
 
+    read_len_buffer='100'
+    min_filter_quality='7'
+    # filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
 
+    if arg_dict['subset'] == 'none':
+        print('No subsetting, continuing to next step...')
+        NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+        toplotpath = demultiplexed_path
+        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+    else:
+        print('Subsetting demultiplexed reads by your subset choice...')
+        mysub = int(arg_dict['subset'])
+        print('Subset size: ', mysub)
+        subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
+        # build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
 
+        print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
+        NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+        toplotpath = subdir + '/'
+        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+
+    START HERE!!
+    read_clstr(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'])
 
 
 
