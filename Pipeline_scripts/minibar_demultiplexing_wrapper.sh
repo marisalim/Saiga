@@ -21,7 +21,7 @@ myfastqfile=$3 # concatenated, filtered fastq file
 index_edit_distance=$4 #default 4
 primer_edit_distance=$5 #default 11
 myoutput_dir=$6
-bascallpath=$7
+basecallpath=$7
 
 cd 2b_demultiplexed
 if [ ! -d '$myoutput_dir' ]; then mkdir $myoutput_dir; fi
@@ -32,4 +32,4 @@ if [ ! -d '$myoutput_dir' ]; then mkdir $myoutput_dir; fi
 # -F = create individual sample files for sequences with -S or -C output (default: False)
 
 cd $myoutput_dir
-minibar.py $mysample_indexfile $bascallpath/$myfastqfile -T -F -P $mydatasetID -e $index_edit_distance -E $primer_edit_distance
+minibar.py $mysample_indexfile $basecallpath/$myfastqfile -T -F -P $mydatasetID -e $index_edit_distance -E $primer_edit_distance
