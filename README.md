@@ -35,7 +35,7 @@ conda activate medaka
 conda deactivate
 ```
 
-# currently have numpy error...
+- if you get this error, you need to change `openblas` version (see https://github.com/numpy/numpy/issues/14165)
 ```
 Traceback (most recent call last):
   File "/anaconda3/envs/medaka/lib/python3.6/site-packages/numpy/core/__init__.py", line 16, in <module>
@@ -89,4 +89,10 @@ Original error was: dlopen(/anaconda3/envs/medaka/lib/python3.6/site-packages/nu
   Referenced from: /anaconda3/envs/medaka/lib/python3.6/site-packages/numpy/core/_multiarray_umath.cpython-36m-darwin.so
   Reason: image not found
 ```
+  - change version of openblas:
+  ```
+  conda install openblas=0.3.6
+  medaka_consensus # now shows the medaka_consensus options
+  ```
+  
 
