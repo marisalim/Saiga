@@ -95,4 +95,10 @@ Original error was: dlopen(/anaconda3/envs/medaka/lib/python3.6/site-packages/nu
   medaka_consensus # now shows the medaka_consensus options
   ```
   
+# Run pipeline
 
+1. Set up directories
+```
+python setuppipe.py
+```
+1. 
