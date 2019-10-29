@@ -308,9 +308,10 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
     print('######################################################################')
 
 # 6. Generate clusters, count reads per cluster
-def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult):
+def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult):
     print('######################################################################')
-    print('Read clustering with isONclust.')
+    print('Read clustering with isONclust, consensus seq with spoa,')
+    print('check reverse comp with cd-hit-est, and error correct with Medaka.')
     print('######################################################################')
     sys.stdout.flush()
     time.sleep(1.0)
@@ -320,10 +321,10 @@ def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, t
         mysamp = samp_files.at[i, 'sampleID']
         if thesub == 'none':
             fastqfile = demultiplexed_path + datasetID + samp_files.at[i, 'sampleID']+ '_filtered.fastq'
-            print(fastqfile)
+            # print(fastqfile)
         else:
             fastqfile = demultiplexed_path + datasetID + '_' + str(thesub) + 'sub/' + datasetID + samp_files.at[i, 'sampleID']+ '_filtered' + str(thesub) + '.fastq'
-            print(fastqfile)
+            # print(fastqfile)
 
         commands = """
         if [ ! -d '{1}/3_readclustering/{2}_{3}{4}readclstrs' ]; \
@@ -338,6 +339,17 @@ def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, t
         --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
         echo 'Count reads per cluster...(also, remove space in front of number of reads)'
         cut -f 1 {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.csv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt
+        echo '-------------------------------------------------------------'
+        echo 'Make consensus sequence for each clstr w/ spoa...'
+        bash {0}/spoafy.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs
+        echo '-------------------------------------------------------------'
+        echo 'Make combined consensus seq file...'
+        cat {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
+        echo '-------------------------------------------------------------'
+        echo 'Check for reverse/complement...'
+        bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta
+        echo '-------------------------------------------------------------'
+        bash {0}/medaka_corr.sh {}
         """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp)
 
         command_list = commands.split('\n')
@@ -346,20 +358,8 @@ def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, t
             # pipe_log_file.write(cmd)
             # pipe_log_file.write('\n')
 
-    print('Done with read clustering.')
+    print('Done with read clustering and consensus building.')
     print('######################################################################')
-
-# 7. Make consensus sequence from clusters
-def spoafy():
-    print('######################################################################')
-    print('Make consensus seq for read clusters with spoa.')
-    print('######################################################################')
-    sys.stdout.flush()
-    time.sleep(1.0)
-
-    
-
-
 
 # 8. Check for reverse complement
 
@@ -440,7 +440,7 @@ def main():
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
-        read_clstr(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
 
 
 
@@ -456,7 +456,7 @@ def main():
         toplotpath = subdir + '/'
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        read_clstr(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
 
 
 
