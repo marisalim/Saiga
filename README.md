@@ -4,6 +4,7 @@ new pipeline Oct/Nov 2019 for MinION barcoding
 ## New installations
 
 ### Spoa
+- https://github.com/rvaser/spoa
 - spoa builds consensus sequences - this is replacing the step of choosing a representative sequence from isONclust
 - install:
 ```
@@ -24,6 +25,7 @@ source ~/.bashrc # to run
 ```
 
 ### Medaka
+- https://github.com/nanoporetech/medaka
 - Medaka is an ONT error correction software - this is replacing racon
 - install:
 ```
@@ -109,9 +111,9 @@ bash guppy_basecalling_wrapper.sh [MinKNOW dat dir] [output dir] [Pipeline home 
 3. Run rest of pipeline with devo_wrapper.py
 ```
 # qcat version
-python devo_wrapper.py --datID 20190906 --demult qcat --samps 20190906_sample_list.txt 
+python devo_wrapper.py --datID 20190906 --demult qcat --samps 20190906_sample_list.txt --subset [none/int value]
 
 # minibar version
-python devo_wrapper.py --datID 20190906 --demult minibar --samps 20190906_sample_list.txt --mbseqs 20190906_primerindex.txt 
+python devo_wrapper.py --datID 20190906 --demult minibar --samps 20190906_sample_list.txt --mbseqs 20190906_primerindex.txt --subset [none/int value] 
 
 ```
