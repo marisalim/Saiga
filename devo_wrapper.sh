@@ -257,12 +257,12 @@ def build_subs(scripthome, demultiplexed_path, datasetID, samp_files, mysub, sub
 
         commands="""
         echo 'Running script: {0}/seqtk_subsetter.sh'
-        echo 'Subsetting from: {5}{1}'
-        echo 'Output directory: {4}'
+        echo 'Subsetting from: {4}{1}'
+        echo 'Output directory: {3}'
         echo '-------------------------------------------------------------'
-        bash {0}/seqtk_subsetter.sh {2} {3} {1} {4} {5}
+        bash {0}/seqtk_subsetter.sh {2} {1} {3} {4}
         echo '-------------------------------------------------------------'
-        """.format(scripthome, myfastqfile, datasetID, mysub, subdir, demultiplexed_path)
+        """.format(scripthome, myfastqfile, mysub, subdir, demultiplexed_path)
 
         command_list = commands.split('\n')
         for cmd in command_list:
@@ -308,8 +308,7 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
     print('######################################################################')
 
 # 6. Generate clusters, count reads per cluster
-!!!! START HERE!!!!!!
-def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub):
+def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult):
     print('######################################################################')
     print('Read clustering with isONclust.')
     print('######################################################################')
@@ -318,38 +317,28 @@ def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, t
 
     for i in samp_files.index:
 
-        mysamp = datasetID + samp_files.at[i, 'sampleID']
-        fastqfile = demultiplexed_path +     datasetID+samp_files.at[i, 'sampleID']+'.fastq'
-
-
-        # TODO
-        # have to test - might not need to write cluster parser now, have to check what the output of write_fastq is
-        # BUT, if you want a parser, copy/edit the clstr_parser_isonclust.py script
-        isONclust --fastq roedeer_filt_1K.fastq --ont --outfolder roedeer_filt_1K.isonclust
-
-        isONclust write_fastq —clusters final_clusters.csv --fastq ../roedeer_filtered.fastq --outfolder fastqs --N 1
-
-
+        mysamp = samp_files.at[i, 'sampleID']
+        if thesub == 'none':
+            fastqfile = demultiplexed_path + datasetID + samp_files.at[i, 'sampleID']+ '_filtered.fastq'
+            print(fastqfile)
+        else:
+            fastqfile = demultiplexed_path + datasetID + '_' + str(thesub) + 'sub/' + datasetID + samp_files.at[i, 'sampleID']+ '_filtered' + str(thesub) + '.fastq'
+            print(fastqfile)
 
         commands = """
-        if [ ! -d '{1}/3_isONclust_readclustering/{2}_readclstrs' ]; \
-        then mkdir {1}/3_isONclust_readclustering/{2}_readclstrs; fi
-        echo 'Running script: {0}/clstr_parser_isonclust.py'
-        echo 'Input fastq: {4}'
-        echo 'Output rep seq fasta: {5}'
+        if [ ! -d '{1}/3_readclustering/{2}_{3}{4}readclstrs' ]; \
+        then mkdir {1}/3_readclustering/{2}_{3}{4}readclstrs; fi
+        echo 'Input fastq: {5}'
+        echo 'Output folder: {1}/3_readclustering/{2}_{3}{4}readclstrs'
         echo '-------------------------------------------------------------'
-
-        python {0}/clstr_parser_isonclust.py --sampname {3} \
-        --input_fastq {4} --output_fasta {5} \
-        --out_dir {1}/3_isONclust_readclustering/{2}_readclstrs/
-        """.format(scripthome, toppath, datasetID, mysamp, fastqfile, output_name)
-
-
-# TODO
-        # add in read cluster counter
-
-
-
+        echo 'Clustering...'
+        isONclust --fastq {5} --ont --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+        echo 'Writing isONclust cluster fastqs...'
+        isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.csv \
+        --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
+        echo 'Count reads per cluster...(also, remove space in front of number of reads)'
+        cut -f 1 {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.csv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt
+        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp)
 
         command_list = commands.split('\n')
         for cmd in command_list:
@@ -360,10 +349,15 @@ def read_clstr(scripthome, toppath, demultiplexed_path, datasetID, samp_files, t
     print('Done with read clustering.')
     print('######################################################################')
 
-
-
-
 # 7. Make consensus sequence from clusters
+def spoafy():
+    print('######################################################################')
+    print('Make consensus seq for read clusters with spoa.')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
+
+    
 
 
 
@@ -445,7 +439,11 @@ def main():
         print('No subsetting, continuing to next step...')
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        read_clstr(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+
+
+
     else:
         print('Subsetting demultiplexed reads by your subset choice...')
         mysub = int(arg_dict['subset'])
@@ -458,8 +456,10 @@ def main():
         toplotpath = subdir + '/'
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-    START HERE!!
-    read_clstr(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'])
+        read_clstr(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+
+
+
 
 
 
