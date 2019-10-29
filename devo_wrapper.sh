@@ -1,7 +1,5 @@
 # ---------------------------------------------
 # Marisa Lim
-#
-
 # user inputs go into command instead of asking user throughout script
 # this is developer version, not as user-friendly as .py wrapper with user input throughout script
 
@@ -349,7 +347,9 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         echo 'Check for reverse/complement...'
         bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta
         echo '-------------------------------------------------------------'
-        bash {0}/medaka_corr.sh {}
+        echo 'Error correction with Medaka...'
+        echo 'Using cdhit cluster 0 sequence for draft assembly file...'
+        bash {0}/medaka_corr.sh {5} {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
         """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp)
 
         command_list = commands.split('\n')
@@ -358,20 +358,35 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
             # pipe_log_file.write(cmd)
             # pipe_log_file.write('\n')
 
-    print('Done with read clustering and consensus building.')
+    print('Done with read clustering, consensus building, & error correcting.')
     print('######################################################################')
 
-# 8. Check for reverse complement
+# 7. Check species ID
+def blastoff(scripthome, toppath, datasetID, samp_files, thesub, thedemult, blastdb):
+    print('######################################################################')
+    print('Check species ID of Medaka consensus sequence via Blast')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
 
+    for i in samp_files.index:
+        mysamp = samp_files.at[i, 'sampleID']
 
+        commands="""
+        echo 'Blast database: {6}'
+        echo 'Blast searching...'
+        bash {0}/blast_local_wrapper.sh \
+        {6} \
+        {1}/4_spID/{2}_{3}{4}_spID/mk_{5}/consensus.fasta \
+        {1}/4_spID/{2}_{3}{4}_spID/mk_{5}/{5}blastout
+        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), mysamp, blastdb)
 
-# 9. Error correct consensus
-
-
-
-# 10. Check species ID
-
-
+        command_list = commands.split('\n')
+        for cmd in command_list:
+            os.system(cmd)
+            # pipe_log_file.write(cmd)
+            # pipe_log_file.write('\n')
+        print('######################################################################')
 
  # Parse outputs...
 
@@ -397,8 +412,7 @@ def main():
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
     parser.add_argument('--mbseqs', help='For MiniBar demultiplexing, input barcode and primer seqs')
     parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)', required=True)
-    # parser.add_argument()
-    # parser.add_argument()
+    parser.add_argument('--db', help='Blast reference database fasta file', required=True)
     args=parser.parse_args()
     arg_dict=vars(args)
 
@@ -440,8 +454,11 @@ def main():
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
-        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
 
+        # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+
+        # blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+        # blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
 
     else:
@@ -456,8 +473,10 @@ def main():
         toplotpath = subdir + '/'
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+        # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
 
+        # blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+        # blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
 
 
