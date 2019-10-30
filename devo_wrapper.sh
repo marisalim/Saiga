@@ -446,7 +446,8 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
     print('######################################################################')
 
 # add logs
-# need to add read count trackers...
+
+
 
 
 def main():
