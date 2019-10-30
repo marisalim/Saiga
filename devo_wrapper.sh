@@ -347,6 +347,12 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         echo '-------------------------------------------------------------'
         echo 'Check for reverse/complement...'
         bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta
+        python {0}/clstr_parser.py
+
+
+        START HERE - add in this section
+
+
         echo '-------------------------------------------------------------'
         echo 'Error correction with Medaka...'
         echo 'Using cdhit cluster 0 sequence for draft assembly file...'
@@ -447,9 +453,6 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
 
 # add logs
 
-
-
-
 def main():
     print('Run pipeline!')
 
@@ -485,14 +488,14 @@ def main():
     primerindex=toppath + '/2a_samp_lists/' + str(arg_dict['mbseqs'])
 
     ## Run functions!
-    raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, arg_dict['datID'])
+    # raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, arg_dict['datID'])
 
     if arg_dict['demult'] == 'qcat':
         barcode_kit='PBC001'
         my_qcat_minscore='99'
         print('Check input files...')
         print(samp_files)
-        Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
+        # Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
     if arg_dict['demult'] == 'minibar':
         myindex_editdist='2'
         myprimer_editdist='11'
@@ -500,11 +503,11 @@ def main():
         print(samp_files)
         print(pd.read_csv(primerindex, sep='\t'))
         print(demultiplexed_path)
-        MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
+        # MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
 
     read_len_buffer='100'
     min_filter_quality='7'
-    filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
+    # filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
 
     if arg_dict['subset'] == 'none':
         print('No subsetting, continuing to next step...')
@@ -524,19 +527,19 @@ def main():
         mysub = int(arg_dict['subset'])
         print('Subset size: ', mysub)
         subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-        build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
+        # build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
 
         print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
         NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = subdir + '/'
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
         read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
 
         blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
         blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        # stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
 
 
