@@ -447,7 +447,7 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
         df = pd.read_csv(parsed_out, header=0, sep='\t')
         filelist.append(df)
     frame = pd.concat(filelist, axis=0, ignore_index=True, sort=False)
-    frame.to_csv(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_spID/'+datasetID+'_allsamps_parsedout.txt', sep='\t')
+    frame.to_csv(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_allsamps_parsedout.txt', sep='\t')
 
     print('Done parsing, check outputs!')
     print('######################################################################')
