@@ -6,10 +6,8 @@
 #   Table with read counts from start to finish of pipeline, blast results for best match, and species ID
 # Sample = sequenced sample name
 # Raw_count = number of reads in raw fastq file
-# Filter_count = number of reads left after length and q score filters
 # Demultiplexed_count = number of reads left for this sample after demultiplexing
-# Cluster_count = number of reads in the cluster that representative read belongs to, measure of coverage for the rep sequence
-
+# Cluster_count = number of reads in the isONclust clusters and cd-hit clusters
 # rep_seq = representative sequence read ID
 # genbank = genbank accession ID for best match in consensus to blast db
 # per_id = blast % identity of rep seq to NCBI/Sanger ref sequence
@@ -18,7 +16,7 @@
 # evalue = blast e-value (smaller numbers indicate better match)
 # bitscore = blast bit score (larger numbers indicate better match)
 # sp_name = species name of NCBI/Sanger ref seq for blast match
-# consensus_seq = the final consensus sequence
+# consensus_seq = the final consensus sequence from Medaka
 # Oct 2019
 # ---------------------------------------------
 
@@ -89,25 +87,46 @@ for fasta in fasta_sequences:
     clstr_counter += 1
 cdhit_df = pd.DataFrame(list(zip(cdhit_name, cdhit_clstrs)),
                columns =['cdhit_clstr_IDs', 'iso_clstr_IDs'])
-print(cdhit_df)
+# print(cdhit_df)
 print('--------------------------------------------------')
 print('Now, extract the isONclust clstr IDs from the cd-hit output...')
-theisos = cdhit_df.loc[cdhit_df['cdhit_clstr_IDs'] == 'Cluster_0'].iloc[0,1]
 myls = []
-for i in range(0, theisos.count('>')):
-    clstrID = theisos.split('|Consensus...')[i].split('>clstr')[1]
-    myls.append(clstrID)
-print('isONclust cluster IDs in Cluster_0: ', myls)
-print('Now summing reads/cluster for majority cluster...')
+myls2 = []
+for i in cdhit_df.index:
+    mycdhit = cdhit_df.at[i, 'cdhit_clstr_IDs']
+    myiso = cdhit_df.at[i, 'iso_clstr_IDs']
+    # print(myiso)
+    for j in range(0, myiso.count('>')):
+        clstrID = myiso.split('|Consensus...')[j].split('>clstr')[1]
+        # print(clstrID
+        myls.append(clstrID)
+        myls2.append(mycdhit.split('Cluster_')[1])
+cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['ClstrID', 'cdhit'])
+# need to convert dtype from object to numeric in order to merge dfs below
+cdhit_df2['ClstrID'] = pd.to_numeric(cdhit_df2['ClstrID'])
+# print(cdhit_df2)
 
-isos = sum(isonclstcount[isonclstcount['ClstrID'].isin(myls)]['NumReads'])
-print('Number of reads in majority isONclust clusters (revcomp checked): ', isos)
-print('----------------------------------------------------------------------------------')
+df = isonclstcount.merge(cdhit_df2, on='ClstrID')
+print(df)
+print('--------------------------------------------------')
+print('Great! Now, we will calculate the number of reads that form')
+print('majority cluster by both isONclust & cd-hit.')
+print('By definition, the first row value for cdhit cluster ID, will')
+print('correspond to the isONclust cluster with the greatest number of reads.')
+print('Therefore, we can subset all the rows that match the top row cdhit')
+print('cluster ID and sum over the NumReads column to get total # reads.')
+mycdhitID = df.iloc[0,2]
+subsetdf = df.loc[df['cdhit'] == mycdhitID,]
+print(subsetdf)
+clstrID_ls = subsetdf['ClstrID'].tolist()
+# print(clstrID_ls)
+clstr_sum = sum(subsetdf['NumReads'])
+print('Total num reads for top clusters: ', clstr_sum)
 
 readcount_dict = {'Sample': str(arg_dict['sampID']),
 'Raw_count':int(raw_count2),
 'Demultiplexed_count':int(dem_reads),
-'isONclust_count':int(isos)
+'isONclust_count':int(clstr_sum)
 }
 readcount_df=pd.DataFrame(readcount_dict, index=[0])
 print(readcount_df)
