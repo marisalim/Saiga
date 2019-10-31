@@ -123,10 +123,13 @@ clstrID_ls = subsetdf['ClstrID'].tolist()
 clstr_sum = sum(subsetdf['NumReads'])
 print('Total num reads for top clusters: ', clstr_sum)
 
+prop_reads = round(clstr_sum/dem_reads, 4)
+
 readcount_dict = {'Sample': str(arg_dict['sampID']),
 'Raw_count':int(raw_count2),
 'Demultiplexed_count':int(dem_reads),
-'isONclust_count':int(clstr_sum)
+'isONclust_count':int(clstr_sum),
+'prop_demreads_inclstr':float(prop_reads)
 }
 readcount_df=pd.DataFrame(readcount_dict, index=[0])
 print(readcount_df)
