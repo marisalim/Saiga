@@ -347,16 +347,17 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         echo '-------------------------------------------------------------'
         echo 'Check for reverse/complement...'
         bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta
-        python {0}/clstr_parser.py
-
-
-        START HERE - add in this section
-
-
+        python {0}/clstr_parser.py --sampID {6} \
+        --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
+        --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
+        --spoaseqs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
+        --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+        bash {0}/fastaformatter.sh \
+        {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka.fasta \
+        {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta
         echo '-------------------------------------------------------------'
         echo 'Error correction with Medaka...'
-        echo 'Using cdhit cluster 0 sequence for draft assembly file...'
-        bash {0}/medaka_corr.sh {5} {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
+        bash {0}/medaka_corr.sh {5} {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
         """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp)
 
         command_list = commands.split('\n')
@@ -539,7 +540,7 @@ def main():
         blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
         blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        # stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
 
 
