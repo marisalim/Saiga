@@ -21,7 +21,7 @@
 # Dependencies:
 # - Guppy v3.1.5+781ed575
 # - NanoPlot v1.21.0
-# - NanoFilt v2.2.0
+# - NanoFilt v2.5.0
 # - qcat v1.1.0
 # - MiniBar v0.21
 # - seqtk v1.3-r106
@@ -150,10 +150,11 @@ def MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, dat
     for i in samp_files.index:
 
         mysamps = samp_files.loc[i, 'sampleID']
-        print(mysamps)
+        # print(mysamps)
 
         commands2="""
         cat {0}/{1}{2}*fastq > {0}/{1}{2}.fastq.concat
+        for file in {0}/{1}{2}*; do echo $file; grep '^@' $file | wc -l; done
         rm {0}/{1}{2}*.fastq
         mv {0}/{1}{2}.fastq.concat {0}/{1}{2}.fastq
         """.format(demultiplexed_path, datasetID, mysamps)
@@ -207,7 +208,6 @@ def filter_demultiplexed_reads(demultiplexed_path, datasetID, samp_files, min_fi
         echo 'Log file name: {6}'
         echo '-------------------------'
         cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
-        echo ' avg base quality filter done '
         echo 'Deleting un-filtered file!'
         rm {1}
         echo 'Renaming uncategorized read files...'
@@ -307,7 +307,7 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
     print('######################################################################')
 
 # 6. Generate clusters, count reads per cluster
-def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult):
+def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult, myperthresh):
     print('######################################################################')
     print('Read clustering with isONclust, consensus seq with spoa,')
     print('check reverse comp with cd-hit-est, and error correct with Medaka.')
@@ -338,9 +338,10 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
         echo 'Count reads per cluster...(also, remove space in front of number of reads)'
         cut -f 1 {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.csv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt
-        echo '-------------------------------------------------------------'
-        echo 'Make consensus sequence for each clstr w/ spoa...'
-        bash {0}/spoafy.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs
+        python {0}/isonclust_parser.py --sampID {6} --perthresh {7} \
+        --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
+        --scripthome {0} \
+        --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
         echo '-------------------------------------------------------------'
         echo 'Make combined consensus seq file...'
         cat {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
@@ -358,7 +359,7 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         echo '-------------------------------------------------------------'
         echo 'Error correction with Medaka...'
         bash {0}/medaka_corr.sh {5} {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
-        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp)
+        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh)
 
         command_list = commands.split('\n')
         for cmd in command_list:
@@ -473,6 +474,7 @@ def main():
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
     parser.add_argument('--mbseqs', help='For MiniBar demultiplexing, input barcode and primer seqs')
     parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)', required=True)
+    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.8 for keeping clusters with >= 80% of reads)', required=True)
     parser.add_argument('--db', help='Blast reference database fasta file', required=True)
     args=parser.parse_args()
     arg_dict=vars(args)
@@ -507,21 +509,21 @@ def main():
         # MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
 
     read_len_buffer='100'
-    min_filter_quality='7'
+    min_filter_quality=7 #this needs to be type=integer
     # filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
 
     if arg_dict['subset'] == 'none':
         print('No subsetting, continuing to next step...')
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+        # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
         blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-        blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        # blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        # stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
     else:
         print('Subsetting demultiplexed reads by your subset choice...')
@@ -535,14 +537,12 @@ def main():
         toplotpath = subdir + '/'
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'])
+        # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
         blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-        blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        # blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
         stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
-
-
 
 if __name__ == "__main__":
     main()
