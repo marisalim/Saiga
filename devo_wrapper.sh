@@ -158,7 +158,7 @@ def MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, dat
         rm {0}{1}{2}*.fastq
         echo 'Use NanoFilt to remove any empty read lines. Otherwise, these will give TypeError when'
         echo 'you try to filter by both quality and read length'
-        cat {0}{1}{2}.fastq.concat | NanoFilt -l 10 --logfile > {0}{1}{2}.fastq
+        cat {0}{1}{2}.fastq.concat | NanoFilt -l 10 > {0}{1}{2}.fastq
         rm {0}{1}{2}.fastq.concat
         """.format(demultiplexed_path, datasetID, mysamps)
 
@@ -210,7 +210,7 @@ def filter_demultiplexed_reads(demultiplexed_path, datasetID, samp_files, min_fi
         echo 'Max length: {5}'
         echo 'Log file name: {6}'
         echo '-------------------------'
-        echo cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
+        cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
         echo 'Deleting un-filtered file!'
         rm {1}
         echo 'Renaming uncategorized read files...'
