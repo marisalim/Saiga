@@ -317,7 +317,14 @@ def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult):
     sys.stdout.flush()
     time.sleep(1.0)
 
+    # START HERE - run this with `--subset none`
+    # need to do this before the clustering
+    # turn OFF the demultiplexing and nanofiltering - just run this one function!
+
+    # this may fail for some of the qcat samps - seems NanoPlot crashed...maybe just for the uncategorized read files??
     commands="""
+
+    echo '-------------------------------------------------------------'
     python {scripthome}/nanostats_parser.py \
     --npdir {demultiplexed_path}/{datasetID}_demultiplexed_NanoPlots/ \
     --output_dir {demultiplexed_path} \
@@ -542,6 +549,8 @@ def main():
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
         demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+
+        # fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'])
 
         # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
