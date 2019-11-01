@@ -70,7 +70,9 @@ print('--------------------------------------------------')
 
 print('Tally of isONclust reads per cluster...')
 isonclstcount = pd.read_csv(str(arg_dict['isocount']), sep=' ', header=None)
-isonclstcount.columns = ['NumReads', 'ClstrID']
+isonclstcount.columns = ['NumReads', 'IsoID']
+isonclstcount['PerReads'] = round(isonclstcount['NumReads']/sum(isonclstcount['NumReads']), 2)
+isonclstcount['CumSum'] = pd.Series(isonclstcount['PerReads']).cumsum()
 print(isonclstcount)
 print('--------------------------------------------------')
 
@@ -101,12 +103,12 @@ for i in cdhit_df.index:
         # print(clstrID
         myls.append(clstrID)
         myls2.append(mycdhit.split('Cluster_')[1])
-cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['ClstrID', 'cdhit'])
+cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['IsoID', 'cdhit'])
 # need to convert dtype from object to numeric in order to merge dfs below
-cdhit_df2['ClstrID'] = pd.to_numeric(cdhit_df2['ClstrID'])
+cdhit_df2['IsoID'] = pd.to_numeric(cdhit_df2['IsoID'])
 # print(cdhit_df2)
 
-df = isonclstcount.merge(cdhit_df2, on='ClstrID')
+df = isonclstcount.merge(cdhit_df2, on='IsoID')
 print(df)
 print('--------------------------------------------------')
 print('Great! Now, we will calculate the number of reads that form')
@@ -115,10 +117,10 @@ print('By definition, the first row value for cdhit cluster ID, will')
 print('correspond to the isONclust cluster with the greatest number of reads.')
 print('Therefore, we can subset all the rows that match the top row cdhit')
 print('cluster ID and sum over the NumReads column to get total # reads.')
-mycdhitID = df.iloc[0,2]
+mycdhitID = df.iloc[0,4]
 subsetdf = df.loc[df['cdhit'] == mycdhitID,]
 print(subsetdf)
-clstrID_ls = subsetdf['ClstrID'].tolist()
+clstrID_ls = subsetdf['IsoID'].tolist()
 # print(clstrID_ls)
 clstr_sum = sum(subsetdf['NumReads'])
 print('Total num reads for top clusters: ', clstr_sum)
