@@ -467,6 +467,7 @@ def main():
         --samps 20190906_sample_list.txt
         --mbseqs 20190906_primerindex.txt
         --subset 500
+        --perthresh 0.1
         --db Sept2019_Sanger_cytb.fasta
         ''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
