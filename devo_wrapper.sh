@@ -309,6 +309,27 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
     time.sleep(0.5)
     print('######################################################################')
 
+def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult):
+    print('######################################################################')
+    print('Extract Nano Stats for full datasets from NanoPlot outputs:')
+    print('number of demultiplexed reads, avg quality and length')
+    print('######################################################################')
+    sys.stdout.flush()
+    time.sleep(1.0)
+
+    commands="""
+    python {scripthome}/nanostats_parser.py \
+    --npdir {demultiplexed_path}/{datasetID}_demultiplexed_NanoPlots/ \
+    --output_dir {demultiplexed_path} \
+    --dat {datasetID} --demult {thedemult}
+    """.format(scripthome, demultiplexed_path, datasetID, thedemult)
+
+    command_list = commands.split('\n')
+    for cmd in command_list:
+        os.system(cmd)
+
+    print('######################################################################')
+
 # 6. Generate clusters, count reads per cluster
 def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult, myperthresh):
     print('######################################################################')
@@ -502,7 +523,7 @@ def main():
         my_qcat_minscore='99'
         print('Check input files...')
         print(samp_files)
-        # Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
+        Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
     if arg_dict['demult'] == 'minibar':
         myindex_editdist='2'
         myprimer_editdist='11'
@@ -534,19 +555,19 @@ def main():
         mysub = int(arg_dict['subset'])
         print('Subset size: ', mysub)
         subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-        # build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
+        build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
 
         print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
         NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = subdir + '/'
-        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
+        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
         blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-        # blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        # stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
 if __name__ == "__main__":
     main()
