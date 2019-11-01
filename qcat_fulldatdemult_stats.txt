@@ -1,0 +1,93 @@
+Demultiplexing this file: 20190906.fastq
+Output directory: /Users/marisalim/Desktop/clstrfq2019/2b_demultiplexed/20190906_qcat_demultiplexouts/
+qcat min-score: 99
+qcat barcode kit: PBC001
+-------------------------------------------------------------
+Adapters detected in 106333 of 515142 reads
+         PBC001 106333: |                 #### |  20.64 %
+           none 402960: |      ############### |  78.22 %
+Barcodes detected in 106333 of 515142 adapters
+      barcode01  20775: |                      |   4.03 %
+      barcode02  38704: |                    # |   7.51 %
+      barcode03  20236: |                      |   3.93 %
+      barcode04  26616: |                    # |   5.17 %
+      barcode05      1: |                      |   0.00 %
+      barcode08      1: |                      |   0.00 %
+           none 402960: |      ############### |  78.22 %
+5849 reads were skipped due to the min. length filter.
+Demultiplexing finished in 207.31s
+-------------------------------------------------------------
+
+Demultiplexing this file: 20190909.fastq
+Output directory: /Users/marisalim/Desktop/clstrfq2019/2b_demultiplexed/20190909_qcat_demultiplexouts/
+qcat min-score: 99
+qcat barcode kit: PBC001
+-------------------------------------------------------------
+Adapters detected in 130439 of 729764 reads
+         PBC001 130439: |                  ### |  17.87 %
+           none 590527: |     ################ |  80.92 %
+Barcodes detected in 130439 of 729764 adapters
+      barcode01  17851: |                      |   2.45 %
+      barcode02  31789: |                      |   4.36 %
+      barcode03  11933: |                      |   1.64 %
+      barcode04  21201: |                      |   2.91 %
+      barcode05  16976: |                      |   2.33 %
+      barcode06  30685: |                      |   4.20 %
+      barcode07      3: |                      |   0.00 %
+      barcode08      1: |                      |   0.00 %
+           none 590527: |     ################ |  80.92 %
+8798 reads were skipped due to the min. length filter.
+Demultiplexing finished in 290.68s
+-------------------------------------------------------------
+
+Demultiplexing this file: 20190911.fastq
+Output directory: /Users/marisalim/Desktop/clstrfq2019/2b_demultiplexed/20190911_qcat_demultiplexouts/
+qcat min-score: 99
+qcat barcode kit: PBC001
+-------------------------------------------------------------
+Adapters detected in 147134 of 1015433 reads
+         PBC001 147134: |                   ## |  14.49 %
+           none 788576: |      ############### |  77.66 %
+Barcodes detected in 147134 of 1015433 adapters
+      barcode01    101: |                      |   0.01 %
+      barcode02    236: |                      |   0.02 %
+      barcode03    117: |                      |   0.01 %
+      barcode04    134: |                      |   0.01 %
+      barcode05  22724: |                      |   2.24 %
+      barcode06  42021: |                      |   4.14 %
+      barcode07  18142: |                      |   1.79 %
+      barcode08  14036: |                      |   1.38 %
+      barcode09  25032: |                      |   2.47 %
+      barcode10  24583: |                      |   2.42 %
+      barcode11      2: |                      |   0.00 %
+      barcode12      6: |                      |   0.00 %
+           none 788576: |      ############### |  77.66 %
+79723 reads were skipped due to the min. length filter.
+Demultiplexing finished in 401.83s
+-------------------------------------------------------------
+
+Demultiplexing this file: 20190913.fastq
+Output directory: /Users/marisalim/Desktop/clstrfq2019/2b_demultiplexed/20190913_qcat_demultiplexouts/
+qcat min-score: 99
+qcat barcode kit: PBC001
+-------------------------------------------------------------
+Adapters detected in 86404 of 751086 reads
+         PBC001  86404: |                   ## |  11.50 %
+           none 643174: |    ################# |  85.63 %
+Barcodes detected in 86404 of 751086 adapters
+      barcode01     75: |                      |   0.01 %
+      barcode02    142: |                      |   0.02 %
+      barcode03     61: |                      |   0.01 %
+      barcode04     67: |                      |   0.01 %
+      barcode05     53: |                      |   0.01 %
+      barcode06    130: |                      |   0.02 %
+      barcode07  14356: |                      |   1.91 %
+      barcode08   9593: |                      |   1.28 %
+      barcode09  13574: |                      |   1.81 %
+      barcode10  18800: |                      |   2.50 %
+      barcode11  11656: |                      |   1.55 %
+      barcode12  17897: |                      |   2.38 %
+           none 643174: |    ################# |  85.63 %
+21508 reads were skipped due to the min. length filter.
+Demultiplexing finished in 302.18s
+-------------------------------------------------------------
