@@ -447,8 +447,8 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
     for parsed_out in Path(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_spID/').rglob('*_finalparsed_output.txt'):
         df = pd.read_csv(parsed_out, header=0, sep='\t')
         filelist.append(df)
-    frame = pd.concat(filelist, axis=0, ignore_index=True, sort=False)
-    frame.to_csv(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_allsamps_parsedout.txt', sep='\t')
+    frame = pd.concat(filelist, axis=0, sort=False)
+    frame.drop('Unnamed: 0', axis='columns').to_csv(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_allsamps_parsedout.txt', sep='\t', index=False)
 
     print('Done parsing, check outputs!')
     print('######################################################################')
