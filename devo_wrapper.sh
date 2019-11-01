@@ -153,10 +153,13 @@ def MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, dat
         # print(mysamps)
 
         commands2="""
-        cat {0}/{1}{2}*fastq > {0}/{1}{2}.fastq.concat
-        for file in {0}/{1}{2}*; do echo $file; grep '^@' $file | wc -l; done
-        rm {0}/{1}{2}*.fastq
-        mv {0}/{1}{2}.fastq.concat {0}/{1}{2}.fastq
+        cat {0}{1}{2}*fastq > {0}{1}{2}.fastq.concat
+        for file in {0}{1}{2}*; do echo $file; grep '^@' $file | wc -l; done
+        rm {0}{1}{2}*.fastq
+        echo 'Use NanoFilt to remove any empty read lines. Otherwise, these will give TypeError when'
+        echo 'you try to filter by both quality and read length'
+        cat {0}{1}{2}.fastq.concat | NanoFilt -l 10 --logfile > {0}{1}{2}.fastq
+        rm {0}{1}{2}.fastq.concat
         """.format(demultiplexed_path, datasetID, mysamps)
 
         command_list2 = commands2.split('\n')
@@ -207,7 +210,7 @@ def filter_demultiplexed_reads(demultiplexed_path, datasetID, samp_files, min_fi
         echo 'Max length: {5}'
         echo 'Log file name: {6}'
         echo '-------------------------'
-        cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
+        echo cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
         echo 'Deleting un-filtered file!'
         rm {1}
         echo 'Renaming uncategorized read files...'
@@ -507,17 +510,17 @@ def main():
         print(samp_files)
         print(pd.read_csv(primerindex, sep='\t'))
         print(demultiplexed_path)
-        # MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
+        MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
 
     read_len_buffer='100'
     min_filter_quality=7 #this needs to be type=integer
-    # filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
+    filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
 
     if arg_dict['subset'] == 'none':
         print('No subsetting, continuing to next step...')
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
-        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
         # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
@@ -543,7 +546,7 @@ def main():
         blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
         # blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        # stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
 if __name__ == "__main__":
     main()
