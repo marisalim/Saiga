@@ -309,7 +309,7 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
     time.sleep(0.5)
     print('######################################################################')
 
-def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult):
+def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult, toppath):
     print('######################################################################')
     print('Extract Nano Stats for full datasets from NanoPlot outputs:')
     print('number of demultiplexed reads, avg quality and length')
@@ -325,11 +325,11 @@ def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult):
     commands="""
 
     echo '-------------------------------------------------------------'
-    python {scripthome}/nanostats_parser.py \
-    --npdir {demultiplexed_path}/{datasetID}_demultiplexed_NanoPlots/ \
-    --output_dir {demultiplexed_path} \
-    --dat {datasetID} --demult {thedemult}
-    """.format(scripthome, demultiplexed_path, datasetID, thedemult)
+    python {0}/nanostats_parser.py \
+    --npdir {1}/{2}_demultiplexed_NanoPlots/ \
+    --output_dir {4}/2b_demultiplexed/ \
+    --dat {2} --demult {3}
+    """.format(scripthome, demultiplexed_path, datasetID, thedemult, toppath)
 
     command_list = commands.split('\n')
     for cmd in command_list:
@@ -530,7 +530,7 @@ def main():
         my_qcat_minscore='99'
         print('Check input files...')
         print(samp_files)
-        Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
+        # Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
     if arg_dict['demult'] == 'minibar':
         myindex_editdist='2'
         myprimer_editdist='11'
@@ -538,19 +538,19 @@ def main():
         print(samp_files)
         print(pd.read_csv(primerindex, sep='\t'))
         print(demultiplexed_path)
-        MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
+        # MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
 
     read_len_buffer='100'
     min_filter_quality=7 #this needs to be type=integer
-    filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
+    # filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
 
     if arg_dict['subset'] == 'none':
         print('No subsetting, continuing to next step...')
         NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = demultiplexed_path
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        # fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'])
+        fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
 
         # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
