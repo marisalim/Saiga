@@ -84,7 +84,7 @@ print('correspond to the isONclust cluster with the greatest number of reads.')
 print('Therefore, we can subset all the rows that match the top row cdhit')
 print('cluster ID and sum over the NumReads column to get total # reads.')
 mycdhitID = df.iloc[0,4]
-subsetdf = df.loc[df['cdhit'] == mycdhitID,]
+subsetdf = df.loc[df['cdhit'] == mycdhitID, ]
 print(subsetdf)
 clstrID_ls = subsetdf['IsoID'].tolist()
 # print(clstrID_ls)
@@ -102,4 +102,12 @@ with open(str(arg_dict['output_dir']) + 'formedaka.fasta', 'w') as out_file:
             # print(fullclstrID)
             if fullclstrID in name:
                 SeqIO.write(fasta, out_file, 'fasta')
-print('Great! Now, you can run spoa on the forspoaround2.fasta file and feed that to Medaka!')
+print('Now, we can make a fastq file of just reads from subsetted clusters...')
+
+finalclstrs = pd.read_csv(arg_dict['output_dir'] + 'final_clusters.csv', header=None, sep='\t')
+finalclstrs.columns = ['IsoID', 'ReadID']
+finalclstrs_subset = finalclstrs[finalclstrs['IsoID'].isin(clstrID_ls)]
+finalclstrs_subset['DummyID'] = '0'
+print(finalclstrs_subset[['DummyID', 'ReadID']].head(5))
+print('Save subset cluster reads with dummy ID.')
+finalclstrs_subset[['DummyID', 'ReadID']].to_csv(arg_dict['output_dir'] + 'final_clusters_subset.csv', sep='\t', index=False, header=False)
