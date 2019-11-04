@@ -384,12 +384,16 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
         --spoaseqs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
         --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+        echo 'Next, generate new write_fastq file as input for Medaka...'
+        isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters_subset.csv \
+        --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka --N 1
+        echo 'Make fasta sequential instead of interleaved...'
         bash {0}/fastaformatter.sh \
         {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka.fasta \
         {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta
         echo '-------------------------------------------------------------'
         echo 'Error correction with Medaka...'
-        bash {0}/medaka_corr.sh {5} {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
+        bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
         """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh)
 
         command_list = commands.split('\n')
@@ -550,7 +554,7 @@ def main():
         toplotpath = demultiplexed_path
         # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
+        # fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
 
         # read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
@@ -564,12 +568,12 @@ def main():
         mysub = int(arg_dict['subset'])
         print('Subset size: ', mysub)
         subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-        build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
+        # build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
 
         print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
         NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
         toplotpath = subdir + '/'
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        # demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
         read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
