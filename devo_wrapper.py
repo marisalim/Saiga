@@ -488,10 +488,66 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
     print('Done parsing, check outputs!')
     print('######################################################################')
 
+def stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, datasetID, samp_files, thesub, thedemult, blastdb):
+        print('######################################################################')
+        print('Parse outputs, calculate ID stats.')
+        print('######################################################################')
+        sys.stdout.flush()
+        time.sleep(1.0)
+
+        header_commands = """
+        echo 'Make blast db header file if does not exist'
+        if [ ! -d '{0}HEADERS.txt' ]; then grep '>' {0} | bash {1}/blast_header.sh > {0}HEADERS.txt; fi
+        """.format(blastdb, scripthome)
+
+        header_list = header_commands.split('\n')
+        for cmd in header_list:
+            os.system(cmd)
+
+        for i in samp_files.index:
+            mysamp = samp_files.at[i, 'sampleID']
+
+            commands = """
+            echo '-------------------------------------------------------------'
+            echo 'Running script: {0}/stat_parser.py'
+            echo '-------------------------------------------------------------'
+            echo 'Parsing data...'
+            python {0}/stat_parser.py \
+            --sampID {5} \
+            --blastout {1}/4_spID/{4}_{6}{7}_spID/mk_{5}/{5}blastout.sorted \
+            --blastdbheaders {8}HEADERS.txt \
+            --rawfq {2}/{4}.fastq \
+            --demultfq {3}{4}{5}_filtered.fastq \
+            --isocount {1}/3_readclustering/{4}_{6}{7}readclstrs/{5}_clstrs/reads_per_cluster.txt \
+            --cdhitclstrs {1}/3_readclustering/{4}_{6}{7}readclstrs/{5}_clstrs/cdhit_{5}.fasta.clstr \
+            --mkout {1}/4_spID/{4}_{6}{7}_spID/mk_{5}/consensus.fasta \
+            --output_dir {1}/4_spID/{4}_{6}{7}_spID/mk_{5}/
+            """.format(scripthome, toppath, basecallout_path, demultiplexed_path, datasetID, mysamp, thedemult, thesub, blastdb)
+
+            command_list = commands.split('\n')
+            for cmd in command_list:
+                os.system(cmd)
+                # pipe_log_file.write(cmd)
+                # pipe_log_file.write('\n')
+
+        # create a concatenated file for all the final_parsed_output files
+        # this will be the single input with read count info to R script for
+        # making the sequence run summary report with markdown
+        filelist = []
+        for parsed_out in Path(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_spID/').rglob('*_finalparsed_output.txt'):
+            df = pd.read_csv(parsed_out, header=0, sep='\t')
+            filelist.append(df)
+        frame = pd.concat(filelist, axis=0, sort=False)
+        frame.drop('Unnamed: 0', axis='columns').to_csv(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_allsamps_parsedout.txt', sep='\t', index=False)
+
+        print('Done parsing, check outputs!')
+        print('######################################################################')
+
 # add logs
 
 def main():
-    print('Run pipeline!')
+    print('Run pipeline! For help, enter: ')
+    print('python devo_wrapper.py --help')
 
     ## set up args
     parser = argparse.ArgumentParser(
@@ -507,17 +563,19 @@ def main():
         --rawNP n
         --demultgo y
         --filt y
+        --clust n
         ''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
-    parser.add_argument('--demult', help='Options: qcat, minibar', required=True)
+    parser.add_argument('--demult', help='Options: qcat, minibar')
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
     parser.add_argument('--mbseqs', help='For MiniBar demultiplexing, input barcode and primer seqs')
-    parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)', required=True)
-    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.8 for keeping clusters with >= 80% of reads)', required=True)
-    parser.add_argument('--db', help='Blast reference database fasta file', required=True)
+    parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)')
+    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.8 for keeping clusters with >= 80% of reads)')
+    parser.add_argument('--db', help='Blast reference database fasta file')
     parser.add_argument('--rawNP', help='Option to generate NanoPlots for raw reads. Options: y, n', required=True)
-    parser.add_argument('--demultgo', help='Option to demultiplex reads. Options: y, n', required=True)
+    parser.add_argument('--demultgo', help='Option to demultiplex reads. Options: y, n. Requires --demult and --mbseqs (just for minibar) flags', required=True)
     parser.add_argument('--filt', help='Option to filter demultiplexed reads. Options: y, n', required=True)
+    parser.add_argument('--clust', help='Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --perthresh, and --db flags', required=True)
 
     args=parser.parse_args()
     arg_dict=vars(args)
@@ -564,38 +622,41 @@ def main():
     elif arg_dict['filt'] =='n':
         pass
 
-    if arg_dict['subset'] == 'none':
-        print('No subsetting, continuing to next step...')
-        NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
-        toplotpath = demultiplexed_path
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+    if arg_dict['clust'] == 'y':
+        if arg_dict['subset'] == 'none':
+            print('No subsetting, continuing to next step...')
+            NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+            toplotpath = demultiplexed_path
+            demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
+            fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
 
-        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
+            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
-        blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-        blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+            blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+            blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
-    else:
-        print('Subsetting demultiplexed reads by your subset choice...')
-        mysub = int(arg_dict['subset'])
-        print('Subset size: ', mysub)
-        subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-        build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
+            stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        else:
+            print('Subsetting demultiplexed reads by your subset choice...')
+            mysub = int(arg_dict['subset'])
+            print('Subset size: ', mysub)
+            subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
+            build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
 
-        print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
-        NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
-        toplotpath = subdir + '/'
-        demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+            print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
+            NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+            toplotpath = subdir + '/'
+            demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-        read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
+            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
-        blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-        blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+            blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+            blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-        stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+            stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+    elif arg_dict['clust'] == 'n':
+        pass
 
 if __name__ == "__main__":
     main()
