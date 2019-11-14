@@ -563,6 +563,7 @@ def main():
         --rawNP n
         --demultgo y
         --filt y
+        --subgo n
         --clust n
         ''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
@@ -575,6 +576,7 @@ def main():
     parser.add_argument('--rawNP', help='Option to generate NanoPlots for raw reads. Options: y, n', required=True)
     parser.add_argument('--demultgo', help='Option to demultiplex reads. Options: y, n. Requires --demult and --mbseqs (just for minibar) flags', required=True)
     parser.add_argument('--filt', help='Option to filter demultiplexed reads. Options: y, n', required=True)
+    parser.add_argument('--subgo', help='Option to make random data subsets. Options: y, n. Requires --subset flag', required=True)
     parser.add_argument('--clust', help='Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --perthresh, and --db flags', required=True)
 
     args=parser.parse_args()
@@ -622,7 +624,7 @@ def main():
     elif arg_dict['filt'] =='n':
         pass
 
-    if arg_dict['clust'] == 'y':
+    if arg_dict['subgo'] == 'y':
         if arg_dict['subset'] == 'none':
             print('No subsetting, continuing to next step...')
             NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
@@ -630,13 +632,6 @@ def main():
             demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
             fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
-
-            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
-
-            blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-            blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
-
-            stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
         else:
             print('Subsetting demultiplexed reads by your subset choice...')
             mysub = int(arg_dict['subset'])
@@ -648,7 +643,25 @@ def main():
             NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
             toplotpath = subdir + '/'
             demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+    elif arg_dict['subgo'] == 'n':
+        pass
 
+    if arg_dict['clust'] == 'y':
+        if arg_dict['subset'] == 'none':
+            print('No subsetting, continuing to next step...')
+            NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+            toplotpath = demultiplexed_path
+            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
+
+            blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+            blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+
+            stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        else:
+            print('Using demultiplexed reads by your subset choice...')
+            mysub = int(arg_dict['subset'])
+            print('Subset size: ', mysub)
+            subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
             read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
