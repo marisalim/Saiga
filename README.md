@@ -110,10 +110,6 @@ bash guppy_basecalling_wrapper.sh [MinKNOW dat dir] [output dir] [Pipeline home 
 ```
 3. Run rest of pipeline with devo_wrapper.py
 ```
-# qcat version
-python devo_wrapper.py --datID 20190906 --demult qcat --samps 20190906_sample_list.txt --subset [none/int value] --perthresh 0.1 --db Sept2019_Sanger_cytb.fasta
-
-# minibar version
-python devo_wrapper.py --datID 20190906 --demult minibar --samps 20190906_sample_list.txt --mbseqs 20190906_primerindex.txt --subset [none/int value] --perthresh 0.1 --db Sept2019_Sanger_cytb.fasta
+bash pipe_batcher.sh
 ```
 4. Generate MS figures/tables with ClstrfqFigsTables.rmd
