@@ -338,7 +338,7 @@ def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult, topp
     print('######################################################################')
 
 # 6. Generate clusters, count reads per cluster
-def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult, myperthresh):
+def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_files, thesub, thedemult, myperthresh, cdhit_seqsim_thresh):
     print('######################################################################')
     print('Read clustering with isONclust, consensus seq with spoa,')
     print('check reverse comp with cd-hit-est, and error correct with Medaka.')
@@ -378,7 +378,7 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         cat {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
         echo '-------------------------------------------------------------'
         echo 'Check for reverse/complement...'
-        bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta
+        bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta {8}
         python {0}/clstr_parser.py --sampID {6} \
         --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
         --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
@@ -394,7 +394,7 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         echo '-------------------------------------------------------------'
         echo 'Error correction with Medaka...'
         bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
-        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh)
+        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
 
         command_list = commands.split('\n')
         for cmd in command_list:
@@ -651,7 +651,8 @@ def main():
             print('No subsetting, continuing to next step...')
             NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
             toplotpath = demultiplexed_path
-            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
+            cdhit_seqsim_thresh = 0.8
+            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
             blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
@@ -662,7 +663,8 @@ def main():
             mysub = int(arg_dict['subset'])
             print('Subset size: ', mysub)
             subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'])
+            cdhit_seqsim_thresh = 0.8
+            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
             blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
