@@ -551,9 +551,11 @@ def main():
     ## set up args
     parser = argparse.ArgumentParser(
         description='''Developer master MinION barcoding pipeline for species ID script''',
-        epilog='''Example:
-
-        ''')
+        epilog='''Example: Example: python devo_wrapper.py
+        --dat 20190906 --samps 20190906_sample_list.txt
+        --rawNP n --demultgo n --filt n --subgo y --clust y
+        --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001
+        --qs 7 --buffer 100 --subset 100 --perthresh 0.1 --cdhitsim 0.8 --db Sept2019_Sanger_cytb.fasta''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
     parser.add_argument('--rawNP', help='Option to generate NanoPlots for raw reads. Options: y, n', required=True)
