@@ -1,10 +1,9 @@
 # ---------------------------------------------
 # Marisa Lim
-# user inputs go into command instead of asking user throughout script
-# this is developer version, not as user-friendly as .py wrapper with user input throughout script
+# this is developer version. user-friendly features in progress! logs would be nice..
 
 # Steps:
-# 1. Basecall # let's run this outside of the script for now, since it takes so long. Here, just run the cat function
+# 1. Basecall # run this outside of the script, since it takes so long. Here, just run the cat function for guppy output fastq files.
 #   and Nanoplot raw reads
 # 2. Demultiplex - qcat vs. MiniBar
 # 3. NanoFilt by quality and length
@@ -31,7 +30,7 @@
 # - medaka v0.10.0
 # - NCBI blast v2.8.1+
 
-# October/November 2019
+# November 2019
 # ---------------------------------------------
 
 # load packages
@@ -546,38 +545,34 @@ def stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path
 # add logs
 
 def main():
-    print('Run pipeline! For help, enter: ')
-    print('python devo_wrapper.py --help')
+    print('Run pipeline! To see options, enter: ')
+    print('python devo_wrapper.py -h')
 
     ## set up args
     parser = argparse.ArgumentParser(
         description='''Developer master MinION barcoding pipeline for species ID script''',
-        epilog='''Example: python devo_wrapper.py
-        --datID 20190906
-        --demult minibar
-        --samps 20190906_sample_list.txt
-        --mbseqs 20190906_primerindex.txt
-        --subset 500
-        --perthresh 0.1
-        --db Sept2019_Sanger_cytb.fasta
-        --rawNP n
-        --demultgo y
-        --filt y
-        --subgo n
-        --clust n
+        epilog='''Example:
+
         ''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
-    parser.add_argument('--demult', help='Options: qcat, minibar')
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
-    parser.add_argument('--mbseqs', help='For MiniBar demultiplexing, input barcode and primer seqs')
-    parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)')
-    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.8 for keeping clusters with >= 80% of reads)')
-    parser.add_argument('--db', help='Blast reference database fasta file')
     parser.add_argument('--rawNP', help='Option to generate NanoPlots for raw reads. Options: y, n', required=True)
-    parser.add_argument('--demultgo', help='Option to demultiplex reads. Options: y, n. Requires --demult and --mbseqs (just for minibar) flags', required=True)
+    parser.add_argument('--demultgo', help='Option to demultiplex reads. Options: y, n. Requires --demult; MiniBar: --mbseqs, --mb_idx_dist, --mb_pr_dist; qcat: --qcat_minscore, --ONTbarcodekit flags', required=True)
     parser.add_argument('--filt', help='Option to filter demultiplexed reads. Options: y, n', required=True)
     parser.add_argument('--subgo', help='Option to make random data subsets. Options: y, n. Requires --subset flag', required=True)
     parser.add_argument('--clust', help='Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --perthresh, and --db flags', required=True)
+    parser.add_argument('--demult', help='Options: qcat, minibar')
+    parser.add_argument('--mbseqs', help='For MiniBar demultiplexing, input barcode and primer seqs')
+    parser.add_argument('--mb_idx_dist', help='MiniBar index edit distance (e.g., 2)')
+    parser.add_argument('--mb_pr_dist', help='MiniBar primer edit distance (e.g., 11)')
+    parser.add_argument('--qcat_minscore', help='qcat minimum alignment score (0-100 scale)')
+    parser.add_argument('--ONTbarcodekit', help='ONT barcode kit (e.g., PBC001). Required for qcat.')
+    parser.add_argument('--qs', help='Phred quality score threshold to filter reads by')
+    parser.add_argument('--buffer', help='Buffer length +/- amplicon length to filter reads by')
+    parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)')
+    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.8 for keeping clusters with >= 80%% of reads)')
+    parser.add_argument('--cdhitsim', help='Sequence similarity threshold for cd-hit-est to cluster reads by')
+    parser.add_argument('--db', help='Blast reference database fasta file')
 
     args=parser.parse_args()
     arg_dict=vars(args)
@@ -601,14 +596,18 @@ def main():
 
     if arg_dict['demultgo'] == 'y':
         if arg_dict['demult'] == 'qcat':
-            barcode_kit='PBC001'
-            my_qcat_minscore='99'
+            barcode_kit = arg_dict['ONTbarcodekit']
+            my_qcat_minscore = arg_dict['qcat_minscore']
+            # barcode_kit='PBC001'
+            # my_qcat_minscore=99
             print('Check input files...')
             print(samp_files)
             Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
         if arg_dict['demult'] == 'minibar':
-            myindex_editdist='2'
-            myprimer_editdist='11'
+            myindex_editdist = arg_dict['mb_idx_dist']
+            myprimer_editdist = arg_dict['mb_pr_dist']
+            # myindex_editdist=2
+            # myprimer_editdist=11
             print('Check input files...')
             print(samp_files)
             print(pd.read_csv(primerindex, sep='\t'))
@@ -618,8 +617,10 @@ def main():
         pass
 
     if arg_dict['filt'] == 'y':
-        read_len_buffer='100'
-        min_filter_quality=7 #this needs to be type=integer
+        read_len_buffer = arg_dict['buffer']
+        min_filter_quality = arg_dict['qs']
+        # read_len_buffer=100
+        # min_filter_quality=7
         filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
     elif arg_dict['filt'] =='n':
         pass
@@ -651,7 +652,8 @@ def main():
             print('No subsetting, continuing to next step...')
             NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
             toplotpath = demultiplexed_path
-            cdhit_seqsim_thresh = 0.8
+            cdhit_seqsim_thresh = arg_dict['cdhitsim']
+            # cdhit_seqsim_thresh = 0.8
             read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
@@ -663,7 +665,8 @@ def main():
             mysub = int(arg_dict['subset'])
             print('Subset size: ', mysub)
             subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-            cdhit_seqsim_thresh = 0.8
+            cdhit_seqsim_thresh = arg_dict['cdhitsim']
+            # cdhit_seqsim_thresh = 0.8
             read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
