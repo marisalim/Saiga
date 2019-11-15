@@ -598,16 +598,12 @@ def main():
         if arg_dict['demult'] == 'qcat':
             barcode_kit = arg_dict['ONTbarcodekit']
             my_qcat_minscore = arg_dict['qcat_minscore']
-            # barcode_kit='PBC001'
-            # my_qcat_minscore=99
             print('Check input files...')
             print(samp_files)
             Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
         if arg_dict['demult'] == 'minibar':
             myindex_editdist = arg_dict['mb_idx_dist']
             myprimer_editdist = arg_dict['mb_pr_dist']
-            # myindex_editdist=2
-            # myprimer_editdist=11
             print('Check input files...')
             print(samp_files)
             print(pd.read_csv(primerindex, sep='\t'))
@@ -619,8 +615,6 @@ def main():
     if arg_dict['filt'] == 'y':
         read_len_buffer = arg_dict['buffer']
         min_filter_quality = arg_dict['qs']
-        # read_len_buffer=100
-        # min_filter_quality=7
         filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
     elif arg_dict['filt'] =='n':
         pass
@@ -653,7 +647,6 @@ def main():
             NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
             toplotpath = demultiplexed_path
             cdhit_seqsim_thresh = arg_dict['cdhitsim']
-            # cdhit_seqsim_thresh = 0.8
             read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
@@ -666,7 +659,6 @@ def main():
             print('Subset size: ', mysub)
             subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
             cdhit_seqsim_thresh = arg_dict['cdhitsim']
-            # cdhit_seqsim_thresh = 0.8
             read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
             blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
