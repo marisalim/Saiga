@@ -657,7 +657,7 @@ def main():
             stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
         else:
             print('Using demultiplexed reads by your subset choice...')
-            mysub = int(arg_dict['subset'])
+            mysub = arg_dict['subset']
             print('Subset size: ', mysub)
             subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
             cdhit_seqsim_thresh = arg_dict['cdhitsim']
