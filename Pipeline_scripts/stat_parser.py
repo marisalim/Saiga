@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ---------------------------------------------
 # Marisa Lim
-# Parsing blast of consensus results from isONclust > minimap2 > racon > blast
+# Parsing blast of consensus results from isONclust > medaka > blast
 # Outputs for each sample:
 #   Table with read counts from start to finish of pipeline, blast results for best match, and species ID
 # Sample = sequenced sample name
