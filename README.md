@@ -1,4 +1,4 @@
-# clstrfq pipeline
+# Saiga pipeline
 New pipeline Oct/Nov 2019 for MinION barcoding - testing by Stefan Prost and Marisa Lim; scripts by Marisa Lim
 
 ## New installations: Spoa & Medaka
