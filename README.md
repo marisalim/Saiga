@@ -1,7 +1,24 @@
-# Saiga pipeline
-New pipeline Oct/Nov 2019 for MinION barcoding - testing by Stefan Prost and Marisa Lim; scripts by Marisa Lim
+# SAIGA: A user-friendly DNA barcoding bioinformatics pipeline for MinION sequencing
 
-## New installations: Spoa & Medaka
+Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*) conservation. 
+
+If you use our pipeline, please cite: 
+
+
+# Dependencies:
+- Guppy v3.1.5+781ed575
+- NanoPlot v1.21.0
+- NanoFilt v2.5.0
+- qcat v1.1.0
+- MiniBar v0.21
+- seqtk v1.3-r106
+- isONclust v0.0.4
+- spoa v3.0.1
+- cd-hit-est v4.8.1
+- medaka v0.10.0
+- NCBI blast v2.8.1+
+
+# Software installation for Spoa & Medaka
 
 ### Spoa
 - https://github.com/rvaser/spoa
@@ -113,3 +130,5 @@ bash guppy_basecalling_wrapper.sh [MinKNOW dat dir] [output dir] [Pipeline home 
 bash pipe_batcher.sh
 ```
 4. Generate MS figures/tables with ClstrfqFigsTables.rmd
+
+
