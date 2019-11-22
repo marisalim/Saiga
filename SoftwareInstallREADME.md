@@ -99,12 +99,5 @@ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Do
 - Follow download instructions from NCBI
 - Add ncbi-blast to bashrc path (`export PATH=$PATH:[your path]/ncbi-blast-2.8.1+/bin`)
 
-## Map reads to references: Minimap2
-https://github.com/lh3/minimap2
-
-- Download from github: `git clone https://github.com/lh3/minimap2`
-- Compile code: `cd minimap2 && make`
-- Add minimap2 path to bashrc path (`export PATH=$PATH:[your path]/minimap2`)
-
 
 
