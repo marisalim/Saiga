@@ -15,7 +15,6 @@ if [ ! -d '{0}/2a_samp_lists' ]; then mkdir {0}/2a_samp_lists; fi
 if [ ! -d '{0}/2b_demultiplexed' ]; then mkdir {0}/2b_demultiplexed; fi
 if [ ! -d '{0}/3_readclustering' ]; then mkdir {0}/3_readclustering; fi
 if [ ! -d '{0}/4_spID' ]; then mkdir {0}/4_spID; fi
-if [ ! -d '{0}/Pipeline_logfiles' ]; then mkdir {0}/Pipeline_logfiles; fi
 """.format(toppath)
 
 command_list = commands.split('\n')
