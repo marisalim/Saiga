@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# ------------------------------------------------------------
+# Nov 2019 Marisa Lim
+# generate spoa consensus sequences, format file name
+# ------------------------------------------------------------
+
 source ~/.bashrc
 
 clstr_file=$1

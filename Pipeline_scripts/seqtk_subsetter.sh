@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# ------------------------------------------------------------
+# Nov 2019 Marisa Lim
+# generate data subsets
+# ------------------------------------------------------------
+
 source ~/.bashrc
 
 # use seqtk to create random subsets of fastq files

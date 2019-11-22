@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# ------------------------------------------------------------
+# Nov 2019 Marisa Lim
+# error correct spoa consensus with Medaka
+# only map reads that were in majority cluster after
+# isONclust and cd-hit steps
+# ------------------------------------------------------------
+
 source /anaconda3/etc/profile.d/conda.sh
 conda activate medaka
 

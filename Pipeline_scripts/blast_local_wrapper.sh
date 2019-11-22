@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
+# ------------------------------------------------------------
+# Nov 2019 Marisa Lim
 # Blast search
 # database = Sanger sequences
 # query = Nanopore reads
+# ------------------------------------------------------------
 
 source ~/.bashrc
 

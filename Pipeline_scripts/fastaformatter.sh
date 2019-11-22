@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# ------------------------------------------------------------
+# Nov 2019 Marisa Lim
+# make fasta seq one line instead of multiple
+# ------------------------------------------------------------
+
 input=$1
 output=$2
 
