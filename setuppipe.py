@@ -10,6 +10,7 @@ print('Setting up output directories... ')
 commands = """
 echo 'Making directories'
 cd {0}
+if [ ! -d '{0}/0_MinKNOW_rawdata' ]; then mkdir {0}/0_MinKNOW_rawdata; fi
 if [ ! -d '{0}/1_basecalled' ]; then mkdir {0}/1_basecalled; fi
 if [ ! -d '{0}/2a_samp_lists' ]; then mkdir {0}/2a_samp_lists; fi
 if [ ! -d '{0}/2b_demultiplexed' ]; then mkdir {0}/2b_demultiplexed; fi
