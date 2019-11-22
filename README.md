@@ -34,6 +34,7 @@ Go to `Demo/` for instructions.
 
 ## Run your data
 1. Set up data inputs.
+  - *Move MinKNOW files to 0_MinKNOW_rawdata folder.* The files for a given dataset should be in their own folder within the 0_MinKNOW_rawdata folder.
   - *Create sample list text file, save it in the 2a_samp_lists folder.* The file must be named with `[year][month][day]_sample_list.txt`, where the date info is the day of the sequencing run (you could name it whatever you want, but my scripts use this label to keep track of files from different sequence runs). The file is tab-delimited. It requires the sample name, barcoding gene, amplicon length, and ONT index. One line per sample.
   - *Create a fasta file with your Sanger sequences, save it in the Blast_resources folder.* Each sequence header should have the sample name, species identifier, and barcoding gene. This is for the blast step.
  
