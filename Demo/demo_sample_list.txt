@@ -1,0 +1,4 @@
+01snow	cytb	421	barcode01
+02tern	cytb	421	barcode02
+03snow	16s	250	barcode03
+04tern	16s	250	barcode04
