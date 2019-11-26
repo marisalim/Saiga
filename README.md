@@ -4,10 +4,9 @@ Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*)
 
 If you use our pipeline, please cite:
 
-<img src='clstrpipe2019workflow.png' width='500' height='700'>
+<img src='clstrpipe2019workflow.png' width='400' height='400'>
 
------------
-
+-------------
 # Table of contents
 1. [Dependencies](#Dependencies)
     1. [Software installation advice](#installadvice)
@@ -16,7 +15,7 @@ If you use our pipeline, please cite:
 4. [Run Saiga](#runpipe)
     1. [Demo data](#demo)
     2. [Your data](#yourdat)
-  
+
 [top](#top)
 
 ## Software dependencies <a name="Dependencies"></a>
@@ -41,7 +40,14 @@ One of the easiest ways to install python libraries (and other software) is to u
   - `conda config --add channels bioconda`
   - `conda config --add channels conda-forge`
 
-Note that this pipeline relies on certain software being called via `source ~/.bashrc`.
+Note that this pipeline relies on the following software being called via `source ~/.bashrc`:
+  - guppy
+  - qcat
+  - MiniBar
+  - seqtk
+  - spoa
+  - cd-hit
+  - blast
 
 #### Basecall: Guppy
 https://community.nanoporetech.com/downloads
@@ -139,7 +145,7 @@ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Do
 <a href="#top">Back to top</a>
 
 ## Formatting input files <a name="inputs"></a>
-- See `Demo/` for example input files.
+See `Demo/` for example input files.
 - *Move MinKNOW files to 0_MinKNOW_rawdata folder.* The files for a given dataset should be in their own folder within the 0_MinKNOW_rawdata folder.
 - *Create sample list text file, save it in the 2a_samp_lists folder.* The file must be named with `[year][month][day]_sample_list.txt`, where the date info is the day of the sequencing run (you could name it whatever you want, but my scripts use this label to keep track of files from different sequence runs). The file is tab-delimited. It requires the sample name, barcoding gene, amplicon length, and ONT index. One line per sample.
 - *Create a fasta file with your Sanger sequences, save it in the Blast_resources folder.* Each sequence header should have the sample name, species identifier, and barcoding gene. This is for the blast step.
@@ -147,15 +153,31 @@ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Do
 <a href="#top">Back to top</a>
 
 ## Picking parameters <a name="params"></a>
-The pipeline is written to allow you to run different steps without rerunning certain analyses over and over. The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
+The pipeline is written to allow you to run different steps without rerunning certain analyses over and over. The flags/options described below should be edited in the `pipe_batcher.sh` script.
 
-Saiga was written to implement demultiplexing by either qcat (`--demult qcat`) or MiniBar (`--demult minibar`). To run qcat, you must set the `--min_score` and `--ONTbarcodekit` flags. To run MiniBar, you must set the `--mbseqs`, `--mb_idx_dist`, and `--mb_pr_dist` flags. Descriptions below.
+The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
 
-The pipeline filters reads by read quality Phred score with the `--qs` flag. Read length is filtered with the `--buffer` length you set around the amplicon length provided in your input `sample_list.txt` file.
+Saiga was written to implement demultiplexing by either qcat or MiniBar. To run qcat, you need the following flags: `--demultgo y --demult qcat --min_score [ ] --ONTbarcodekit [ ]`. To run MiniBar, you need the following flags: `--demultgo y --demult minibar --mbseqs [ ] --mb_idx_dist [ ] --mb_pr_dist [ ]`.
+
+The pipeline filters reads by read quality Phred score abd read length by a buffer you set around the amplicon length provided in your input `sample_list.txt` file: `--filt y --qs [ ] --buffer [ ]`.
 
 Next, you can choose to analyze the full dataset (`--subgo y --subset none`) or subsets of the data (`--subgo y --subset 500` for 500 read sample of the data).
 
-To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum number of reads per cluster (`--perthresh`), a minimum cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`).
+To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum number of reads per cluster (`--perthresh`), a minimum cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`): `--clust y --demult [ ] --subset [ ] --perthresh [ ] --cdhitsim [ ] --db [ ]`.
+
+You can run the pipeline steps in pieces, just set the option flags to `n` if you don't want to run those steps.
+
+Example commands:
+```
+# Run all steps of pipeline
+python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo y --clust y --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001 --qs 7 --buffer 100 --subset 50 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
+
+# Run only through filtering
+python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo n --clust n --demult minibar --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 --qs 7 --buffer 100
+
+# Run only the subsetting and clustering steps
+python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP n --demultgo n --filt n --subgo y --clust y --demult minibar --subset 50 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
+```
 
 REQUIRED flags:
 
@@ -188,7 +210,7 @@ Flag | Description
 
 <a href="#top">Back to top</a>
 
-## Run Saiga! <a name="runpipe"></a>
+## Usage: Run Saiga! <a name="runpipe"></a>
 1. Download this Github repository.
 1. Set up directories
 ```
@@ -196,6 +218,8 @@ python setuppipe.py
 ```
 
 ### Run demo data <a name="demo"></a>
+Note: The demo files have already been basecalled.
+
 1. Go to `Demo/` for input files. The demo files need to be moved to correct pipeline directories:
   - Download demo files
   - Move the entire `demo_guppybasecallouts` directory to `1_basecalled`
@@ -217,22 +241,24 @@ python setuppipe.py
 2. Basecall MinKNOW files.
 ```
 cd Pipeline_scripts
-bash guppy_basecalling_wrapper.sh [MinKNOW dat dir] [output dir] [Pipeline home path]
+bash guppy_basecalling_wrapper.sh 0_MinKNOW_rawdata/[directory with MinKNOW files] 1_guppybasecalled [Pipeline home path]
 ```
 3. Run rest of pipeline.
+
+You can simply run the pipeline via the `python devo_wrapper.py [flags]` command, or if you have many datasets or analyses to do, you can write all the python commands into the `pipe_batcher.sh` and run them all via the `bash pipe_batcher.sh` command. The pipeline has been tested on small barcoding datasets, and so it has not been necessary to parallelize, though you can certainly write your own code for that!
 - *Edit `pipe_batcher.sh`:*
     - This is the script that runs through all the pipeline steps. You need to comment out the demo version commands (add ‘#’ to the beginning of the lines).
-    - Then edit the python command `--` flags with appropriate dataset name, files, and parameter values. You need to set the following flags to `y` or `n` to tell the pipeline whether to:
+    - Then edit the python command flags with appropriate dataset name, files, and parameter values. You need to set the following flags to `y` or `n` to tell the pipeline whether to:
       - `--rawNP`: concatenate raw basecalled fastq files, output NanoPlot stats
       - `--demultgo`: demultiplex reads
       - `--filt`: filter reads
       - `--subgo`: create subsets
       - `--clust`: cluster reads, generate consensus, blast to reference database
-     - If you've run the top steps, and want to rerun the later steps, just switch the top ones to `n`. However, all these steps have to be run at least once!
+     - If you've run the top steps, and want to rerun the later steps, just switch the top ones to `n`. However, all steps have to be run at least once!
 ```
 bash pipe_batcher.sh
 ```
 
-4. Check your results! :tada:
+4. Check your results! They currently live in the 4_spID directory. :tada: :clap:
 
 <a href="#top">Back to top</a> :fireworks:
