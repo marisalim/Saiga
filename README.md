@@ -241,7 +241,7 @@ Note: The demo files have already been basecalled.
   - Run: `bash pipe_batcher.sh`
 
 3. Check output results:
-  - Outputs from Blast search are in `4_spID` (`allsamps_parsedout.txt` files)
+  - Outputs from Blast search are in `FinalResults/` (`allsamps_parsedout.txt` files)
 
 <a href="#top">Back to top</a>
 
@@ -269,6 +269,6 @@ You can simply run the pipeline via the `python devo_wrapper.py [flags]` command
 bash pipe_batcher.sh
 ```
 
-4. Check your results! They currently live in the 4_spID directory. :tada: :clap:
+4. Check your results in `FinalResults/`. :tada: :clap:
 
 <a href="#top">Back to top</a> :fireworks:
