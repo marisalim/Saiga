@@ -4,7 +4,7 @@ Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*)
 
 If you use our pipeline, please cite:
 
-<img src='clstrpipe2019workflow.png' width='400' height='400'>
+<img src='clstrpipe2019workflow.png' width='400' height='700'>
 
 -------------
 # Table of contents
@@ -147,7 +147,17 @@ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Do
 ## Formatting input files <a name="inputs"></a>
 See `Demo/` for example input files.
 - *Move MinKNOW files to 0_MinKNOW_rawdata folder.* The files for a given dataset should be in their own folder within the 0_MinKNOW_rawdata folder.
+
 - *Create sample list text file, save it in the 2a_samp_lists folder.* The file must be named with `[year][month][day]_sample_list.txt`, where the date info is the day of the sequencing run (you could name it whatever you want, but my scripts use this label to keep track of files from different sequence runs). The file is tab-delimited. It requires the sample name, barcoding gene, amplicon length, and ONT index. One line per sample.
+
+- For MiniBar, *create primer and index sequence file, save it in the 2a_samp_lists folder*. The file must be named with `[year][month][day]_primerindex.txt`, where the date info as the same as above. The file is tab-delimited. It requires the sample name (same as above), barcoding primer name, barcoding primer sequences, and index sequences (including reverse complement sequences for both). See MiniBar package website for more details. I have a script (`Pipeline_scripts/revcomp.py`) that generates reverse complement sequences for given input sequences (`all_primerindex_seqs.csv`), formatted like this:
+```
+MarkerName,MarkerSeq,Type
+16s_FSn,AYHAGACSAGAAGACCC,primer
+NB01,CACAAAGACACCGACAACTTTCTT,ONTindex
+```
+However the `_primerindex.txt` file currently has to be created manually.
+
 - *Create a fasta file with your Sanger sequences, save it in the Blast_resources folder.* Each sequence header should have the sample name, species identifier, and barcoding gene. This is for the blast step.
 
 <a href="#top">Back to top</a>
