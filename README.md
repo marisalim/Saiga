@@ -5,7 +5,7 @@ Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*)
 If you use our pipeline, please cite:
 
 -----------
-
+[top](#top)
 # Table of contents
 1. [Dependencies](#Dependencies)
     1. [Software installation advice](#installadvice)
@@ -27,6 +27,8 @@ If you use our pipeline, please cite:
 - cd-hit-est v4.8.1
 - medaka v0.10.0
 - NCBI blast v2.8.1+
+
+<a href="#top">Back to top</a>
 
 ### Software installation advice <a name="installadvice"></a>
 One of the easiest ways to install python libraries (and other software) is to use conda install from Anaconda.
@@ -130,11 +132,15 @@ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Do
 - Follow download instructions from NCBI
 - Add ncbi-blast to bashrc path (`export PATH=$PATH:[your path]/ncbi-blast-2.8.1+/bin`)
 
+<a href="#top">Back to top</a>
+
 ## Formatting input files <a name="inputs"></a>
 - See `Demo/` for example input files.
 - *Move MinKNOW files to 0_MinKNOW_rawdata folder.* The files for a given dataset should be in their own folder within the 0_MinKNOW_rawdata folder.
 - *Create sample list text file, save it in the 2a_samp_lists folder.* The file must be named with `[year][month][day]_sample_list.txt`, where the date info is the day of the sequencing run (you could name it whatever you want, but my scripts use this label to keep track of files from different sequence runs). The file is tab-delimited. It requires the sample name, barcoding gene, amplicon length, and ONT index. One line per sample.
 - *Create a fasta file with your Sanger sequences, save it in the Blast_resources folder.* Each sequence header should have the sample name, species identifier, and barcoding gene. This is for the blast step.
+
+<a href="#top">Back to top</a>
 
 ## Picking parameters <a name="params"></a>
 The pipeline is written to allow you to run different steps without rerunning certain analyses over and over. The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
@@ -146,10 +152,6 @@ The pipeline filters reads by read quality Phred score with the `--qs` flag. Rea
 Next, you can choose to analyze the full dataset (`--subgo y --subset none`) or subsets of the data (`--subgo y --subset 500` for 500 read sample of the data).
 
 To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum number of reads per cluster (`--perthresh`), a minimum cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`).
-
-
-
-
 
 REQUIRED flags:
 
@@ -180,10 +182,7 @@ Flag | Description
 --cdhitsim | Sequence similarity threshold for cd-hit-est to cluster reads by (e.g., 0.8 for clustering reads with at least 80% similarity)
 --db | Blast reference database fasta file
 
-
-
-
-
+<a href="#top">Back to top</a>
 
 ## Run Saiga! <a name="runpipe"></a>
 1. Download this Github repository.
@@ -205,6 +204,8 @@ python setuppipe.py
 
 3. Check output results:
   - Outputs from Blast search are in `4_spID` (`allsamps_parsedout.txt` files)
+
+<a href="#top">Back to top</a>
 
 ### Run your data <a name="yourdat"></a>
 1. Add your data input files.
@@ -229,3 +230,5 @@ bash pipe_batcher.sh
 ```
 
 4. Check your results! :tada:
+
+<a href="#top">Back to top</a> :fireworks:
