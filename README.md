@@ -11,8 +11,8 @@ If you use our pipeline, please cite:
 2. [Input files](#inputs)
 3. [Choose parameters](#params)
 4. [Run Saiga](#runpipe)
-  1. [Demo data](#demo)
-  2. [Your data](#yourdat)
+    1. [Demo data](#demo)
+    2. [Your data](#yourdat)
 
 ## Software dependencies <a name="Dependencies"></a>
 - Guppy v3.1.5+781ed575
@@ -61,7 +61,7 @@ Flag | Description
 --qs | Phred quality score threshold to filter reads by
 --buffer | Buffer length +/- amplicon length to filter reads by
 --subset | Options: none OR integer subset of reads to be randomly selected (e.g., 500)
---perthresh | Percent read threshold for keeping isONclust clusters (e.g., 0.1 for keeping clusters with >= 10%% of reads)
+--perthresh | Percent read threshold for keeping isONclust clusters (e.g., 0.1 for keeping clusters with >= 10% of reads)
 --cdhitsim | Sequence similarity threshold for cd-hit-est to cluster reads by (e.g., 0.8 for clustering reads with at least 80% similarity)
 --db | Blast reference database fasta file
 
@@ -77,13 +77,24 @@ Flag | Description
 python setuppipe.py
 ```
 
-## Run demo data <a name="demo"></a>
-Go to `Demo/` for instructions.
+### Run demo data <a name="demo"></a>
+1. Go to `Demo/` for input files. The demo files need to be moved to correct pipeline directories:
+  - Download demo files
+  - Move the entire `demo_guppybasecallouts` directory to `1_basecalled`
+  - Move `demo_primerindex.txt` and `demo_sample_list.txt` to `2a_samp_lists`
+  - Move `demo.fasta` to `Blast_resources`
 
-## Run your data <a name="yourdat"></a>
-1. Check your data inputs.
+2. Run pipeline:
+  - Open the `pipe_batcher.sh` script. Edit python command as needed for script options. Demo dataset commands are at the top.
+  - Run: `bash pipe_batcher.sh`
 
-2. Basecall
+3. Check output results:
+  - Outputs from Blast search are in `4_spID` (`allsamps_parsedout.txt` files)
+
+### Run your data <a name="yourdat"></a>
+1. Add your data input files.
+
+2. Basecall MinKNOW files.
 ```
 cd Pipeline_scripts
 bash guppy_basecalling_wrapper.sh [MinKNOW dat dir] [output dir] [Pipeline home path]
