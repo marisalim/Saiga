@@ -11,8 +11,8 @@ If you use our pipeline, please cite:
 2. [Input files](#inputs)
 3. [Choose parameters](#params)
 4. [Run Saiga](#runpipe)
-  1. [Demo data](#demo)
-  2. [Your data](#yourdat)
+    1. [Demo data](#demo)
+    2. [Your data](#yourdat)
 
 ## Software dependencies <a name="Dependencies"></a>
 - Guppy v3.1.5+781ed575
