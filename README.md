@@ -4,7 +4,7 @@ Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*)
 
 If you use our pipeline, please cite:
 
-![pipeflow](clstrpipe2019workflow.png =50x50)
+<img src='clstrpipe2019workflow.png' width='200' height='200'>
 
 -----------
 
