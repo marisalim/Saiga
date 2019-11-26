@@ -4,10 +4,10 @@ Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*)
 
 If you use our pipeline, please cite:
 
-![pipeflow](clstrpipe2019workflow.png)
+![pipeflow](clstrpipe2019workflow.png =50x50)
 
 -----------
-[top](#top)
+
 # Table of contents
 1. [Dependencies](#Dependencies)
     1. [Software installation advice](#installadvice)
@@ -16,6 +16,8 @@ If you use our pipeline, please cite:
 4. [Run Saiga](#runpipe)
     1. [Demo data](#demo)
     2. [Your data](#yourdat)
+  
+[top](#top)
 
 ## Software dependencies <a name="Dependencies"></a>
 - Guppy v3.1.5+781ed575
