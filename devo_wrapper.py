@@ -572,7 +572,7 @@ def main():
     parser.add_argument('--qs', help='Phred quality score threshold to filter reads by')
     parser.add_argument('--buffer', help='Buffer length +/- amplicon length to filter reads by')
     parser.add_argument('--subset', help='Options: none OR integer subset of reads to be randomly selected (e.g., 500)')
-    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.8 for keeping clusters with >= 80%% of reads)')
+    parser.add_argument('--perthresh', help='Percent read threshold for keeping isONclust clusters (e.g., 0.1 for keeping clusters with >= 10%% of reads)')
     parser.add_argument('--cdhitsim', help='Sequence similarity threshold for cd-hit-est to cluster reads by')
     parser.add_argument('--db', help='Blast reference database fasta file')
 
