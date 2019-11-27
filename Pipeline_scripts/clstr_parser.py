@@ -32,13 +32,10 @@ parser.add_argument('--output_dir', help='Output directory', required=True)
 args=parser.parse_args()
 arg_dict=vars(args)
 
-print('Tally of isONclust reads per cluster...')
-isonclstcount = pd.read_csv(str(arg_dict['isocount']), sep=' ', header=None)
-isonclstcount.columns = ['NumReads', 'IsoID']
-isonclstcount['PerReads'] = round(isonclstcount['NumReads']/sum(isonclstcount['NumReads']), 2)
-isonclstcount['CumSum'] = pd.Series(isonclstcount['PerReads']).cumsum()
-print(isonclstcount)
-print('--------------------------------------------------')
+# print('Tally of isONclust reads per cluster...')
+isonclstcount = pd.read_csv(str(arg_dict['isocount']), sep='\t')
+# print(isonclstcount)
+# print('--------------------------------------------------')
 
 print('Tally reads in majority cluster...(cd-hit >Cluster_0)')
 fasta_sequences = SeqIO.parse(open(str(arg_dict['cdhitclstrs'])),'fasta')
@@ -53,61 +50,69 @@ for fasta in fasta_sequences:
     clstr_counter += 1
 cdhit_df = pd.DataFrame(list(zip(cdhit_name, cdhit_clstrs)),
                columns =['cdhit_clstr_IDs', 'iso_clstr_IDs'])
-print(cdhit_df)
-print('--------------------------------------------------')
-print('Now, extract the isONclust clstr IDs from the cd-hit output...')
-myls = []
-myls2 = []
-for i in cdhit_df.index:
-    mycdhit = cdhit_df.at[i, 'cdhit_clstr_IDs']
-    myiso = cdhit_df.at[i, 'iso_clstr_IDs']
-    # print(myiso)
-    for j in range(0, myiso.count('>')):
-        clstrID = myiso.split('|Consensus...')[j].split('>clstr')[1]
-        # print(clstrID
-        myls.append(clstrID)
-        myls2.append(mycdhit.split('Cluster_')[1])
-cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['IsoID', 'cdhit'])
-# need to convert dtype from object to numeric in order to merge dfs below
-cdhit_df2['IsoID'] = pd.to_numeric(cdhit_df2['IsoID'])
-print(cdhit_df2)
+# print(cdhit_df)
+# print('--------------------------------------------------')
 
-df = isonclstcount.merge(cdhit_df2, on='IsoID')
-print(df)
-df.to_csv(arg_dict['output_dir'] + 'parsedclstr_table.txt', sep='\t')
+# check if there are no rows...
+if cdhit_df.empty == False:
+    print('Now, extract the isONclust clstr IDs from the cd-hit output...')
+    myls = []
+    myls2 = []
+    for i in cdhit_df.index:
+        mycdhit = cdhit_df.at[i, 'cdhit_clstr_IDs']
+        myiso = cdhit_df.at[i, 'iso_clstr_IDs']
+        # print(myiso)
+        for j in range(0, myiso.count('>')):
+            clstrID = myiso.split('|Consensus...')[j].split('>clstr')[1]
+            # print(clstrID
+            myls.append(clstrID)
+            myls2.append(mycdhit.split('Cluster_')[1])
+    cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['IsoID', 'cdhitID'])
+    # need to convert dtype from object to numeric in order to merge dfs below
+    cdhit_df2['IsoID'] = pd.to_numeric(cdhit_df2['IsoID'])
+    # print(cdhit_df2)
 
-print('--------------------------------------------------')
-print('Great! Now, we will calculate the number of reads that form')
-print('majority cluster by both isONclust & cd-hit.')
-print('By definition, the first row value for cdhit cluster ID, will')
-print('correspond to the isONclust cluster with the greatest number of reads.')
-print('Therefore, we can subset all the rows that match the top row cdhit')
-print('cluster ID and sum over the NumReads column to get total # reads.')
-mycdhitID = df.iloc[0,4]
-subsetdf = df.loc[df['cdhit'] == mycdhitID, ]
-print(subsetdf)
-clstrID_ls = subsetdf['IsoID'].tolist()
-# print(clstrID_ls)
-print('Total num reads for top clusters: ', sum(subsetdf['NumReads']))
+    df = isonclstcount.merge(cdhit_df2, on='IsoID')
+    # print(df)
+    df.to_csv(arg_dict['output_dir'] + 'parsedclstr_table.txt', sep='\t')
 
-print('Now, we can take the spoa consensus sequences for these top cluster(s)')
-print('to create a master consensus sequence for the draft assembly used by Medaka.')
-spoa_conseq = SeqIO.parse(open(str(arg_dict['spoaseqs'])),'fasta')
-with open(str(arg_dict['output_dir']) + 'formedaka.fasta', 'w') as out_file:
-    for fasta in spoa_conseq:
-        name, sequence = fasta.id, str(fasta.seq)
-        # print(name)
-        for clstr in clstrID_ls:
-            fullclstrID = 'clstr' + str(clstr) + '|'
-            # print(fullclstrID)
-            if fullclstrID in name:
-                SeqIO.write(fasta, out_file, 'fasta')
-print('Now, we can make a fastq file of just reads from subsetted clusters...')
+    print('--------------------------------------------------')
+    print('Great! Now, we will calculate the number of reads that form')
+    print('majority cluster by both isONclust & cd-hit.')
+    print('By definition, the first row value for cdhit cluster ID, will')
+    print('correspond to the isONclust cluster with the greatest number of reads.')
+    print('Therefore, we can subset all the rows that match the top row cdhit')
+    print('cluster ID and sum over the NumReads column to get total # reads.')
+    mycdhitID = df.iloc[0,4]
+    subsetdf = df.loc[df['cdhitID'] == mycdhitID, ]
+    print(subsetdf)
+    clstrID_ls = subsetdf['IsoID'].tolist()
+    # print(clstrID_ls)
+    print('Total num reads for top clusters: ', sum(subsetdf['NumReads']))
+    print('--------------------------------------------------')
 
-finalclstrs = pd.read_csv(arg_dict['output_dir'] + 'final_clusters.csv', header=None, sep='\t')
-finalclstrs.columns = ['IsoID', 'ReadID']
-finalclstrs['DummyID'] = '0'
-finalclstrs_subset = finalclstrs.loc[finalclstrs['IsoID'].isin(clstrID_ls), ]
-print(finalclstrs_subset[['DummyID', 'ReadID']].head(5))
-print('Save subset cluster reads with dummy ID.')
-finalclstrs_subset[['DummyID', 'ReadID']].to_csv(arg_dict['output_dir'] + 'final_clusters_subset.csv', sep='\t', index=False, header=False)
+    print('Now, we can take the spoa consensus sequences for these top cluster(s)')
+    print('to create a master consensus sequence for the draft assembly used by Medaka.')
+    spoa_conseq = SeqIO.parse(open(str(arg_dict['spoaseqs'])),'fasta')
+    with open(str(arg_dict['output_dir']) + 'formedaka.fasta', 'w') as out_file:
+        for fasta in spoa_conseq:
+            name, sequence = fasta.id, str(fasta.seq)
+            # print(name)
+            for clstr in clstrID_ls:
+                fullclstrID = 'clstr' + str(clstr) + '|'
+                # print(fullclstrID)
+                if fullclstrID in name:
+                    SeqIO.write(fasta, out_file, 'fasta')
+    print('Now, we can make a fastq file of just reads from subsetted clusters...')
+
+    finalclstrs = pd.read_csv(arg_dict['output_dir'] + 'final_clusters.csv', header=None, sep='\t')
+    finalclstrs.columns = ['IsoID', 'ReadID']
+    finalclstrs['DummyID'] = '0'
+    finalclstrs_subset = finalclstrs.loc[finalclstrs['IsoID'].isin(clstrID_ls), ]
+    # print(finalclstrs_subset[['DummyID', 'ReadID']].head(5))
+    print('Save subset cluster reads with dummy ID.')
+    finalclstrs_subset[['DummyID', 'ReadID']].to_csv(arg_dict['output_dir'] + 'final_clusters_subset.csv', sep='\t', index=False, header=False)
+
+elif cdhit_df.empty == True:
+    #Read cd-hit threshold too high, no clusters. Please adjust the cdhitsim parameter (but must be >= 0.8)
+    pass
