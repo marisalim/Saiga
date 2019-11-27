@@ -60,7 +60,9 @@ raw_count2 = int(raw_count/4)
 print('raw read count: ', raw_count2)
 print('--------------------------------------------------')
 
-print('Tallying data after demultiplexing and filtering...')
+print('Counts for sample: ', arg_dict['sampID'])
+
+print('Tallying data after demultiplexing and filtering for...')
 read_counter = 0
 for line in open(str(arg_dict['demultfq']), 'r'):
     read_counter += 1
@@ -68,15 +70,12 @@ dem_reads = int(read_counter/4)
 print('demultiplexed reads: ', dem_reads)
 print('--------------------------------------------------')
 
-print('Tally of isONclust reads per cluster...')
-isonclstcount = pd.read_csv(str(arg_dict['isocount']), sep=' ', header=None)
-isonclstcount.columns = ['NumReads', 'IsoID']
-isonclstcount['PerReads'] = round(isonclstcount['NumReads']/sum(isonclstcount['NumReads']), 2)
-isonclstcount['CumSum'] = pd.Series(isonclstcount['PerReads']).cumsum()
-print(isonclstcount)
-print('--------------------------------------------------')
+# print('Tally of isONclust reads per cluster...')
+isonclstcount = pd.read_csv(str(arg_dict['isocount']), sep='\t')
+# print(isonclstcount)
+# print('--------------------------------------------------')
 
-print('Tally reads in majority cluster...(cd-hit >Cluster_0)')
+# print('Tally reads in majority cluster...(cd-hit >Cluster_0)')
 fasta_sequences = SeqIO.parse(open(str(arg_dict['cdhitclstrs'])),'fasta')
 clstr_counter = 0
 cdhit_name = []
@@ -90,8 +89,8 @@ for fasta in fasta_sequences:
 cdhit_df = pd.DataFrame(list(zip(cdhit_name, cdhit_clstrs)),
                columns =['cdhit_clstr_IDs', 'iso_clstr_IDs'])
 # print(cdhit_df)
-print('--------------------------------------------------')
-print('Now, extract the isONclust clstr IDs from the cd-hit output...')
+# print('--------------------------------------------------')
+print('Tally of isONclust and cd-hit clusters with majority of reads...')
 myls = []
 myls2 = []
 for i in cdhit_df.index:
@@ -103,22 +102,22 @@ for i in cdhit_df.index:
         # print(clstrID
         myls.append(clstrID)
         myls2.append(mycdhit.split('Cluster_')[1])
-cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['IsoID', 'cdhit'])
+cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['IsoID', 'cdhitID'])
 # need to convert dtype from object to numeric in order to merge dfs below
 cdhit_df2['IsoID'] = pd.to_numeric(cdhit_df2['IsoID'])
 # print(cdhit_df2)
 
 df = isonclstcount.merge(cdhit_df2, on='IsoID')
-print(df)
-print('--------------------------------------------------')
-print('Great! Now, we will calculate the number of reads that form')
-print('majority cluster by both isONclust & cd-hit.')
-print('By definition, the first row value for cdhit cluster ID, will')
-print('correspond to the isONclust cluster with the greatest number of reads.')
-print('Therefore, we can subset all the rows that match the top row cdhit')
-print('cluster ID and sum over the NumReads column to get total # reads.')
+# print(df)
+# print('--------------------------------------------------')
+# print('Great! Now, we will calculate the number of reads that form')
+# print('majority cluster by both isONclust & cd-hit.')
+# print('By definition, the first row value for cdhit cluster ID, will')
+# print('correspond to the isONclust cluster with the greatest number of reads.')
+# print('Therefore, we can subset all the rows that match the top row cdhit')
+# print('cluster ID and sum over the NumReads column to get total # reads.')
 mycdhitID = df.iloc[0,4]
-subsetdf = df.loc[df['cdhit'] == mycdhitID,]
+subsetdf = df.loc[df['cdhitID'] == mycdhitID,]
 print(subsetdf)
 clstrID_ls = subsetdf['IsoID'].tolist()
 # print(clstrID_ls)
@@ -143,21 +142,21 @@ medaka_seqs = []
 for fasta in medaka_cons:
     name, sequence = fasta.id, str(fasta.seq)
     medaka_seqs.append(sequence)
-print('Consensus sequence list (currently, should only be 1 sequence!): ', medaka_seqs)
-print('----------------------------------------------------------------------------------')
+# print('Consensus sequence list (currently, should only be 1 sequence!): ', medaka_seqs)
+# print('----------------------------------------------------------------------------------')
 
 # 1. extracted all headers from blastdb file and create dataframe with accession number and species name
 header_dat = pd.read_csv(str(arg_dict['blastdbheaders']), sep=' ', header=None)
 header_dat.columns = ['genbank', 'db_sp_name']
-print(header_dat.head(5))
-print('--------------------------------------------------')
+# print(header_dat.head(5))
+# print('--------------------------------------------------')
 
 # 2. Parse blast info
 # check if file is empty
 if os.stat(arg_dict['blastout']).st_size != 0:
     blastdat = pd.read_csv(arg_dict['blastout'], sep='\t', header=None)
     blastdat.columns = ['query', 'genbank', 'per_id', 'aln_len', 'num_mismatch', 'gap_open', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore']
-    print(blastdat)
+    # print(blastdat)
 
     # sort by bitscore to get the top hit (should get result with top %ID, length, evalue)
     # retain all blast output information
@@ -165,7 +164,7 @@ if os.stat(arg_dict['blastout']).st_size != 0:
     top_hit = blastdat.sort_values(by=['bitscore'], ascending=False)[0:5]
     print('Sorting blast results by lowest number of mismatches... keeping top result ...')
     top_hit2 = top_hit.sort_values(by=['num_mismatch'], ascending=True)[0:1]
-    print(top_hit2)
+    # print(top_hit2)
 
     # 3. Add species name information to blast output
     # match up with accession number in blast output
@@ -175,7 +174,7 @@ if os.stat(arg_dict['blastout']).st_size != 0:
     # 4. Add in the count info & consensus sequence
     df2 = pd.concat([readcount_df, df], axis=1)
     df2['MkConsSeq'] = medaka_seqs[0]
-    print(df2)
+    # print(df2)
     df2.to_csv(arg_dict['output_dir']+arg_dict['sampID']+'_finalparsed_output.txt', sep='\t')
     print('_finalparsed_output.txt is the final parsed output file.')
     print('--------------------------------------------------')
