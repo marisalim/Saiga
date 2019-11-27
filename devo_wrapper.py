@@ -39,6 +39,7 @@ import time
 import datetime
 import pandas as pd
 from pathlib import Path
+import glob
 
 # 1. Concat basecall files & make NanoPlots
 def raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, datasetID):
@@ -63,8 +64,6 @@ def raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, 
     command_list = commands.split('\n')
     for cmd in command_list:
         os.system(cmd)
-        # pipe_log_file.write(cmd)
-        # pipe_log_file.write('\n')
 
     print('Done plotting NanoPlots.')
     sys.stdout.flush()
@@ -98,8 +97,6 @@ def Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, datase
     command_list = commands.split('\n')
     for cmd in command_list:
         os.system(cmd)
-        # pipe_log_file.write(cmd)
-        # pipe_log_file.write('\n')
 
     print('Rename demultiplexed files according to sample name instead of index name.')
     index_samp_dict = dict(zip(samp_files.indexID, samp_files.sampleID))
@@ -142,8 +139,6 @@ def MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, dat
     command_list = commands.split('\n')
     for cmd in command_list:
         os.system(cmd)
-        # pipe_log_file.write(cmd)
-        # pipe_log_file.write('\n')
 
     print('MiniBar splits up ONT indexed samples into 2 files for some reason. Need to concatenate.')
     for i in samp_files.index:
@@ -153,6 +148,7 @@ def MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, dat
 
         commands2="""
         cat {0}{1}{2}*fastq > {0}{1}{2}.fastq.concat
+        echo 'Printing line counts per fastq file...'
         for file in {0}{1}{2}*; do echo $file; grep '^@' $file | wc -l; done
         rm {0}{1}{2}*.fastq
         echo 'Use NanoFilt to remove any empty read lines. Otherwise, these will give TypeError when'
@@ -202,13 +198,13 @@ def filter_demultiplexed_reads(demultiplexed_path, datasetID, samp_files, min_fi
         # note: renaming unk.fastq and non.fastq files so they work with script for NanoPlot (need the '_' because used as a delimiter)
             # want to see read stats for the uncategorized reads
         commands = """
+        echo '-------------------------'
         echo 'For demultiplexed files in: {0}'
         echo 'Filtering: {1}'
         echo 'Quality score: {3}'
         echo 'Min length: {4}'
         echo 'Max length: {5}'
         echo 'Log file name: {6}'
-        echo '-------------------------'
         cat {1} | NanoFilt -q {3} -l {4} --maxlength {5} --logfile {6} > {2}
         echo 'Deleting un-filtered file!'
         rm {1}
@@ -220,8 +216,6 @@ def filter_demultiplexed_reads(demultiplexed_path, datasetID, samp_files, min_fi
         command_list = commands.split('\n')
         for cmd in command_list:
             os.system(cmd)
-            # pipe_log_file.write(cmd)
-            # pipe_log_file.write('\n')
 
         # count reads in raw vs. filtered
         # calculate reads retained vs. lost after filtering
@@ -268,8 +262,6 @@ def build_subs(scripthome, demultiplexed_path, datasetID, samp_files, mysub, sub
         command_list = commands.split('\n')
         for cmd in command_list:
             os.system(cmd)
-            # pipe_log_file.write(cmd)
-            # pipe_log_file.write('\n')
 
         print('######################################################################')
 
@@ -297,8 +289,6 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
             command_list = commands.split('\n')
             for cmd in command_list:
                 os.system(cmd)
-                # pipe_log_file.write(cmd)
-                # pipe_log_file.write('\n')
 
     print('Done plotting NanoPlots.')
     sys.stdout.flush()
@@ -316,13 +306,7 @@ def fulldat_nanostats(scripthome, demultiplexed_path, datasetID, thedemult, topp
     sys.stdout.flush()
     time.sleep(1.0)
 
-    # START HERE - run this with `--subset none`
-    # need to do this before the clustering
-    # turn OFF the demultiplexing and nanofiltering - just run this one function!
-
-    # this may fail for some of the qcat samps - seems NanoPlot crashed...maybe just for the uncategorized read files??
     commands="""
-
     echo '-------------------------------------------------------------'
     python {0}/nanostats_parser.py \
     --npdir {1}/{2}_demultiplexed_NanoPlots/ \
@@ -373,33 +357,60 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         --scripthome {0} \
         --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
         echo '-------------------------------------------------------------'
-        echo 'Make combined consensus seq file...'
-        cat {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
-        echo '-------------------------------------------------------------'
-        echo 'Check for reverse/complement...'
-        bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta {8}
-        python {0}/clstr_parser.py --sampID {6} \
-        --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
-        --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
-        --spoaseqs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
-        --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
-        echo 'Next, generate new write_fastq file as input for Medaka...'
-        isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters_subset.csv \
-        --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka --N 1
-        echo 'Make fasta sequential instead of interleaved...'
-        bash {0}/fastaformatter.sh \
-        {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka.fasta \
-        {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta
-        echo '-------------------------------------------------------------'
-        echo 'Error correction with Medaka...'
-        bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
         """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
 
         command_list = commands.split('\n')
         for cmd in command_list:
             os.system(cmd)
-            # pipe_log_file.write(cmd)
-            # pipe_log_file.write('\n')
+
+        # if spoa files exist, move on, otherwise, move on to next sample with error
+        spoa_path = toppath + '/3_readclustering/' + datasetID + '_' + thedemult+str(thesub)+'readclstrs/'+mysamp +'_clstrs/clstr_fqs/'
+        if len(glob.glob(spoa_path + '*_spoa.fasta')) != 0:
+            commands2 = """
+            echo 'Make combined consensus seq file...'
+            cat {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
+            echo '-------------------------------------------------------------'
+            echo 'Check for reverse/complement...'
+            bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta {8}
+            python {0}/clstr_parser.py --sampID {6} \
+            --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
+            --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
+            --spoaseqs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
+            --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+            """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
+
+            command_list2 = commands2.split('\n')
+            for cmd in command_list2:
+                os.system(cmd)
+
+            # if subset clstr file exists, move on, otherwise move to next sample after error msg
+            if glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') != 0:
+                commands3 = """
+                echo 'Next, generate new write_fastq file as input for Medaka...'
+                isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters_subset.csv \
+                --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka --N 1
+                echo 'Make fasta sequential instead of interleaved...'
+                bash {0}/fastaformatter.sh \
+                {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka.fasta \
+                {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta
+                echo '-------------------------------------------------------------'
+                echo 'Error correction with Medaka...'
+                bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
+                """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
+
+                command_list3 = commands3.split('\n')
+                for cmd in command_list3:
+                    os.system(cmd)
+
+            elif glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') == 0:
+                print('WARNING! Read cd-hit threshold too high, no clusters. Please adjust the cdhitsim parameter (but must be >= 0.8).')
+                print('Check results for: ', mysamp)
+                pass
+
+        elif glob.glob(spoa_path + '*_spoa.fasta') == 0:
+            print('WARNING! Read clusters are smaller than your threshold. Please adjust the perthresh parameter. No spoa files made.')
+            print('Check results for: ', mysamp)
+            pass
 
     print('Done with read clustering, consensus building, & error correcting.')
     print('######################################################################')
@@ -427,9 +438,7 @@ def blastoff(scripthome, toppath, datasetID, samp_files, thesub, thedemult, blas
         command_list = commands.split('\n')
         for cmd in command_list:
             os.system(cmd)
-            # pipe_log_file.write(cmd)
-            # pipe_log_file.write('\n')
-        print('######################################################################')
+    print('######################################################################')
 
 # Parse outputs...
 def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datasetID, samp_files, thesub, thedemult, blastdb):
@@ -471,8 +480,6 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
         command_list = commands.split('\n')
         for cmd in command_list:
             os.system(cmd)
-            # pipe_log_file.write(cmd)
-            # pipe_log_file.write('\n')
 
     # create a concatenated file for all the final_parsed_output files
     # this will be the single input with read count info to R script for
@@ -482,7 +489,7 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
         df = pd.read_csv(parsed_out, header=0, sep='\t')
         filelist.append(df)
     frame = pd.concat(filelist, axis=0, sort=False)
-    frame.drop('Unnamed: 0', axis='columns').to_csv(toppath+'/4_spID/'+datasetID+'_'+thedemult+thesub+'_allsamps_parsedout.txt', sep='\t', index=False)
+    frame.drop('Unnamed: 0', axis='columns').to_csv(toppath+'/FinalResults/'+datasetID+'_'+thedemult+thesub+'_allsamps_parsedout.txt', sep='\t', index=False)
 
     print('Done parsing, check outputs!')
     print('######################################################################')
@@ -526,8 +533,6 @@ def stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path
             command_list = commands.split('\n')
             for cmd in command_list:
                 os.system(cmd)
-                # pipe_log_file.write(cmd)
-                # pipe_log_file.write('\n')
 
         # create a concatenated file for all the final_parsed_output files
         # this will be the single input with read count info to R script for
@@ -542,16 +547,15 @@ def stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path
         print('Done parsing, check outputs!')
         print('######################################################################')
 
-# add logs
-
 def main():
     print('Run pipeline! To see options, enter: ')
     print('python devo_wrapper.py -h')
+    print('######################################################################')
 
     ## set up args
     parser = argparse.ArgumentParser(
         description='''Developer master MinION barcoding pipeline for species ID script''',
-        epilog='''Example: Example: python devo_wrapper.py
+        epilog='''Example: python devo_wrapper.py
         --dat 20190906 --samps 20190906_sample_list.txt
         --rawNP n --demultgo n --filt n --subgo y --clust y
         --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001
@@ -587,88 +591,96 @@ def main():
     demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
 
     samp_files=pd.read_csv(toppath + '/2a_samp_lists/' + str(arg_dict['samps']), sep='\t', header=None)
-    samp_files.columns=['sampleID', 'gene', 'gene_len', 'indexID']
-    primerindex=toppath + '/2a_samp_lists/' + str(arg_dict['mbseqs'])
+    if len(samp_files.columns) != 4:
+        print('Check sample_list input file. There should be 4 columns.')
+        sys.exit()
+    elif len(samp_files.columns) == 4:
+        samp_files.columns=['sampleID', 'gene', 'gene_len', 'indexID']
+        primerindex=toppath + '/2a_samp_lists/' + str(arg_dict['mbseqs'])
 
-    ## Run functions!
-    if arg_dict['rawNP'] == 'y':
-        raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, arg_dict['datID'])
-    elif arg_dict['rawNP'] == 'n':
-        pass # move on to next step
+        ## Run functions!
+        if arg_dict['rawNP'] == 'y':
+            raw_read_nanoplots(scripthome, basecallout_path, NanoPlot_basecallout_path, arg_dict['datID'])
+        elif arg_dict['rawNP'] == 'n':
+            pass # move on to next step
 
-    if arg_dict['demultgo'] == 'y':
-        if arg_dict['demult'] == 'qcat':
-            barcode_kit = arg_dict['ONTbarcodekit']
-            my_qcat_minscore = arg_dict['qcat_minscore']
-            print('Check input files...')
-            print(samp_files)
-            Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
-        if arg_dict['demult'] == 'minibar':
-            myindex_editdist = arg_dict['mb_idx_dist']
-            myprimer_editdist = arg_dict['mb_pr_dist']
-            print('Check input files...')
-            print(samp_files)
-            print(pd.read_csv(primerindex, sep='\t'))
-            print(demultiplexed_path)
-            MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
-    elif arg_dict['demultgo'] == 'n':
-        pass
+        if arg_dict['demultgo'] == 'y':
+            if arg_dict['demult'] == 'qcat':
+                barcode_kit = arg_dict['ONTbarcodekit']
+                my_qcat_minscore = arg_dict['qcat_minscore']
+                print('Input files...')
+                print(samp_files)
+                Qcat_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], barcode_kit, my_qcat_minscore, samp_files)
+            if arg_dict['demult'] == 'minibar':
+                myindex_editdist = arg_dict['mb_idx_dist']
+                myprimer_editdist = arg_dict['mb_pr_dist']
+                print('Input files...')
+                print(samp_files)
+                if len(pd.read_csv(primerindex, sep='\t').columns) != 11:
+                    print('Check minibar primerindex input file. There should be 11 columns.')
+                    sys.exit()
+                elif len(pd.read_csv(primerindex, sep='\t').columns) == 11:
+                    print(pd.read_csv(primerindex, sep='\t'))
+                    print(demultiplexed_path)
+                    MiniBar_demultiplexing(scripthome, basecallout_path, demultiplexed_path, arg_dict['datID'], myindex_editdist, myprimer_editdist, primerindex, samp_files)
+        elif arg_dict['demultgo'] == 'n':
+            pass
 
-    if arg_dict['filt'] == 'y':
-        read_len_buffer = arg_dict['buffer']
-        min_filter_quality = arg_dict['qs']
-        filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
-    elif arg_dict['filt'] =='n':
-        pass
+        if arg_dict['filt'] == 'y':
+            read_len_buffer = arg_dict['buffer']
+            min_filter_quality = arg_dict['qs']
+            filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
+        elif arg_dict['filt'] =='n':
+            pass
 
-    if arg_dict['subgo'] == 'y':
-        if arg_dict['subset'] == 'none':
-            print('No subsetting, continuing to next step...')
-            NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
-            toplotpath = demultiplexed_path
-            demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        if arg_dict['subgo'] == 'y':
+            if arg_dict['subset'] == 'none':
+                print('No subsetting, continuing to next step...')
+                NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+                toplotpath = demultiplexed_path
+                demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
 
-            fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
-        else:
-            print('Subsetting demultiplexed reads by your subset choice...')
-            mysub = int(arg_dict['subset'])
-            print('Subset size: ', mysub)
-            subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-            build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
+                fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
+            else:
+                print('Subsetting demultiplexed reads by your subset choice...')
+                mysub = int(arg_dict['subset'])
+                print('Subset size: ', mysub)
+                subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
+                build_subs(scripthome, demultiplexed_path, arg_dict['datID'], samp_files, mysub, subdir)
 
-            print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
-            NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
-            toplotpath = subdir + '/'
-            demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
-    elif arg_dict['subgo'] == 'n':
-        pass
+                print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
+                NanoPlot_demultiplexedout_path = subdir + '/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+                toplotpath = subdir + '/'
+                demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
+        elif arg_dict['subgo'] == 'n':
+            pass
 
-    if arg_dict['clust'] == 'y':
-        if arg_dict['subset'] == 'none':
-            print('No subsetting, continuing to next step...')
-            NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
-            toplotpath = demultiplexed_path
-            cdhit_seqsim_thresh = arg_dict['cdhitsim']
-            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
+        if arg_dict['clust'] == 'y':
+            if arg_dict['subset'] == 'none':
+                print('No subsetting, continuing to next step...')
+                NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
+                toplotpath = demultiplexed_path
+                cdhit_seqsim_thresh = arg_dict['cdhitsim']
+                read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
-            blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-            blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+                blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+                blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-            stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
-        else:
-            print('Using demultiplexed reads by your subset choice...')
-            mysub = arg_dict['subset']
-            print('Subset size: ', mysub)
-            subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
-            cdhit_seqsim_thresh = arg_dict['cdhitsim']
-            read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
+                stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+            else:
+                print('Using demultiplexed reads by your subset choice...')
+                mysub = arg_dict['subset']
+                print('Subset size: ', mysub)
+                subdir = demultiplexed_path + arg_dict['datID'] + '_' + str(mysub) + 'sub'
+                cdhit_seqsim_thresh = arg_dict['cdhitsim']
+                read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
 
-            blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-            blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+                blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
+                blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
 
-            stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
-    elif arg_dict['clust'] == 'n':
-        pass
+                stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+        elif arg_dict['clust'] == 'n':
+            pass
 
 if __name__ == "__main__":
     main()
