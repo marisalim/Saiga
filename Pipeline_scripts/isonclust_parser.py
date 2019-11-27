@@ -34,23 +34,32 @@ isonclstcount = pd.read_csv(str(arg_dict['isocount']), sep=' ', header=None)
 isonclstcount.columns = ['NumReads', 'IsoID']
 isonclstcount['PerReads'] = round(isonclstcount['NumReads']/sum(isonclstcount['NumReads']), 2)
 isonclstcount['CumSum'] = pd.Series(isonclstcount['PerReads']).cumsum()
-print(isonclstcount)
+# print(isonclstcount)
+# save proportions to reads_per_cluster.txt
+isonclstcount.to_csv(arg_dict['isocount'], sep='\t', index=False)
 
 print('Only keep clusters with >= percent reads/cluster threshold you chose...')
 subsetdf = isonclstcount.loc[isonclstcount['PerReads'] >= float(arg_dict['perthresh']),]
-print(subsetdf)
+# check if there are no rows...
+if subsetdf.empty == False:
+    print('--------------------------------------------------')
+    print(subsetdf)
 
-myclstrIDsforspoa = subsetdf['IsoID'].tolist()
-print('Cluster IDs to generate spoa consensus sequences from: ', myclstrIDsforspoa)
+    myclstrIDsforspoa = subsetdf['IsoID'].tolist()
+    print('Cluster IDs to generate spoa consensus sequences from: ', myclstrIDsforspoa)
+    print('--------------------------------------------------')
+    # Run spoa from here --
+    print('Make spoa consensus sequence for majority read isONclust clusters...')
+    for clstr in myclstrIDsforspoa:
+        spoainput = arg_dict['output_dir'] + 'clstr_fqs/' + str(clstr) + '.fastq'
+        commands = """
+        echo 'spoa-fying: {1}'
+        bash {0}/spoafy.sh {1}
+        """.format(arg_dict['scripthome'], spoainput)
+        command_list = commands.split('\n')
+        for cmd in command_list:
+            os.system(cmd)
 
-# Run spoa from here --
-print('Make spoa consensus sequence for majority read isONclust clusters...')
-for clstr in myclstrIDsforspoa:
-    spoainput = arg_dict['output_dir'] + 'clstr_fqs/' + str(clstr) + '.fastq'
-    commands = """
-    echo 'spoa-fying: {1}'
-    bash {0}/spoafy.sh {1}
-    """.format(arg_dict['scripthome'], spoainput)
-    command_list = commands.split('\n')
-    for cmd in command_list:
-        os.system(cmd)
+elif subsetdf.empty == True:
+    #Read clusters are smaller than your threshold. Please adjust the perthresh parameter
+    pass
