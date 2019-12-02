@@ -258,7 +258,7 @@ Note: The demo files have already been basecalled.
 <a href="#top">Back to top</a>
 
 ### Run your data <a name="yourdat"></a>
-1. Add your data input files (see <a name="inputs"></a>)
+1. Add your data input files (see <a href="#inputs">Formatting input files</a>)
 
 2. Basecall MinKNOW fast5 files with this command. Note that the directory paths are separated with spaces! The `guppy_basecalling_wrapper.sh` script requires the path to fast5 files, the output path, and the directory path for SAIGA (should be `./` since commands are executed from within the SAIGA directory!).
 
