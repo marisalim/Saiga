@@ -2,7 +2,13 @@
 
 <img align='left' src='saiga logo 3.5.jpg' width='200' height='200'>
 
+The SAIGA pipeline was designed for processing and analyzing Oxford Nanopore Technologies (ONT) MinION DNA-barcoding sequence data. 
+
 Our pipeline is called SAIGA to help bring awareness to conservation efforts for the critically endangered Saiga (*Saiga tatarica*).
+
+>add more about Saiga species threats and conservation efforts!
+
+
 [Saiga logo by Natalie Tam]
 
 If you use our pipeline, please cite:
@@ -36,16 +42,18 @@ If you use our pipeline, please cite:
 - medaka v0.10.0
 - NCBI blast v2.8.1+
 
+SAIGA scripts were written with Python3 and tested for MacOS. 
+
 <a href="#top">Back to top</a>
 
 ### Software installation advice <a name="installadvice"></a>
-One of the easiest ways to install python libraries (and other software) is to use conda install from Anaconda.
+One of the easiest ways to install python libraries and other software is to use conda install from Anaconda.
 - Download Anaconda3: https://www.anaconda.com/distribution/. We want Anaconda3 so that it downloads Python3. Follow installation instructions from website.
 - Once you have anaconda, configure the conda command to tell it where to look online for software. It does not matter what directory you’re in.
   - `conda config --add channels bioconda`
   - `conda config --add channels conda-forge`
 
-Note that this pipeline relies on the following software being called via `source ~/.bashrc`:
+Note that this pipeline assumes the following software are called via `source ~/.bashrc`:
   - guppy
   - qcat
   - MiniBar
@@ -56,19 +64,17 @@ Note that this pipeline relies on the following software being called via `sourc
 
 #### Basecall: Guppy
 https://community.nanoporetech.com/downloads
--	I downloaded Mac OSX version
 
-The downloaded file is zipped and must be unzipped to use:
+- I downloaded Mac OSX version
 - `unzip ont-guppy-cpu_2.3.1_osx64.zip`
 - Add guppy to bashrc path (`export PATH=$PATH:[your path]/ont-guppy-cpu/bin`)
 
 #### Read filtering: Nanofilt
 https://github.com/wdecoster/nanofilt
 
-- Use conda to install, enter:
-  - `conda install -c bioconda nanofilt`
-- Runs as NanoFilt <flags>
-  - this was originally having problem before I added bioconda channel to conda
+- `conda install -c bioconda nanofilt`
+- Runs as `NanoFilt <flags>`
+  - this was originally causing a problem before I added bioconda channel to conda
 
 #### Read stats: NanoPlot
 https://github.com/wdecoster/NanoPlot
@@ -78,12 +84,13 @@ https://github.com/wdecoster/NanoPlot
 - Set up NanoPlot:
   - `cd ./NanoPlot-master`
   - `python setup.py develop`
-- Runs as NanoPlot <inputs>
-  - Pip and conda installation commands both timed out – not sure if the enSilo protection is blocking installation (it says it blocks python3.6 process). So used above steps as work-around
+- Runs as `NanoPlot <inputs>`
+- Alternatively, use pip or conda installation commands (the above is a work-around since pip and conda timed out for me)
 
 #### Demultiplex: Qcat
 https://github.com/nanoporetech/qcat
-- downloaded via git clone option (v1.1.0)
+
+- follow qcat download instructions (I downloaded via `git clone` option (v1.1.0))
 - Add qcat to bashrc path (`export PATH=$PATH:[your path]/qcat`)
 
 #### Demultiplex: MiniBar
@@ -121,7 +128,7 @@ https://github.com/rvaser/spoa
 https://github.com/weizhongli/cdhit/wiki/2.-Installation
 
 - cd-hit-est needs gcc: `brew install gcc`
-- download tar.gz file
+- download cd-hit tar.gz file
 - `tar xvf cd-hit-v4.6.6-2016-0711.tar.gz --gunzip`
 - `cd cd-hit-v4.8.1-2019-0228`
 - `make CC=/usr/local/Cellar/gcc/9.1.0/bin/g++-9`
@@ -151,11 +158,11 @@ https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Do
 
 ## Formatting input files <a name="inputs"></a>
 See `Demo/` for example input files.
-- *Move MinKNOW files to 0_MinKNOW_rawdata folder.* The files for a given dataset should be in their own folder within the 0_MinKNOW_rawdata folder.
+- *Move MinKNOW folder containing fast5 files to 0_MinKNOW_rawdata folder.* The fast5 files for a given dataset should be in their own folder within the 0_MinKNOW_rawdata folder.
 
-- *Create sample list text file, save it in the 2a_samp_lists folder.* The file must be named with `[year][month][day]_sample_list.txt`, where the date info is the day of the sequencing run (you could name it whatever you want, but my scripts use this label to keep track of files from different sequence runs). The file is tab-delimited. It requires the sample name, barcoding gene, amplicon length, and ONT index. One line per sample.
+- *Create sample list text file, save it in the 2a_samp_lists folder.* The file must be named with `[year][month][day]_sample_list.txt`, where the date info is the day of the sequencing run (you could name the section in `[]` whatever you want, but my scripts use this label to keep track of files from different sequence runs). The file is tab-delimited. It requires the sample name, barcoding gene, amplicon length, and index (ONT or custom). One line per sample.
 
-- For MiniBar, *create primer and index sequence file, save it in the 2a_samp_lists folder*. The file must be named with `[year][month][day]_primerindex.txt`, where the date info as the same as above. The file is tab-delimited. It requires the sample name (same as above), barcoding primer name, barcoding primer sequences, and index sequences (including reverse complement sequences for both). See MiniBar package website for more details. I have a script (`Pipeline_scripts/revcomp.py`) that generates reverse complement sequences for given input sequences (`all_primerindex_seqs.csv`), formatted like this:
+- If you're using MiniBar to demultiplex reads, *create primer and index sequence file, save it in the 2a_samp_lists folder*. The file must be named with `[year][month][day]_primerindex.txt`, where the date info as the same as above (this label *must* match!). The file is tab-delimited. It requires the sample name (same as above), barcoding primer name, barcoding primer sequences, and index sequences (including reverse complement sequences for both). See MiniBar package website for more details. I have a script (`Pipeline_scripts/revcomp.py`) that generates reverse complement sequences for given input sequences (`all_primerindex_seqs.csv`), formatted like this:
 ```
 MarkerName,MarkerSeq,Type
 16s_FSn,AYHAGACSAGAAGACCC,primer
@@ -163,34 +170,34 @@ NB01,CACAAAGACACCGACAACTTTCTT,ONTindex
 ```
 However the `_primerindex.txt` file currently has to be created manually.
 
-- *Create a fasta file with your Sanger sequences, save it in the Blast_resources folder.* Each sequence header should have the sample name, species identifier, and barcoding gene. This is for the blast step.
+- *Create a fasta file with your Sanger or other reference sequences, save it in the Blast_resources folder.* This file is used during the Blast step. The reliability of the Blast species identification depends on the quality of this reference database - curate carefully! Each sequence header should include the sample name, species identifier, and barcoding gene, separated by spaces.
 
 <a href="#top">Back to top</a>
 
 ## Picking parameters <a name="params"></a>
-The pipeline is written to allow you to run different steps without rerunning certain analyses over and over. The flags/options described below should be edited in the `pipe_batcher.sh` script.
+The pipeline is written to allow you to run different steps without rerunning all analyses over and over. The flags/options described below should be edited in the `pipe_batcher.sh` script. The top lines of this script run the demo dataset.
 
 The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
 
-Saiga was written to implement demultiplexing by either qcat or MiniBar. To run qcat, you need the following flags: `--demultgo y --demult qcat --min_score [ ] --ONTbarcodekit [ ]`. To run MiniBar, you need the following flags: `--demultgo y --demult minibar --mbseqs [ ] --mb_idx_dist [ ] --mb_pr_dist [ ]`.
+Saiga was written to implement demultiplexing by either qcat or MiniBar. qcat can only demultiplex (currently) with ONT index kits, while MiniBar can demultiplex ONT and custom indexes. To run qcat, you need the following flags: `--demultgo y --demult qcat --min_score [ ] --ONTbarcodekit [ ]`. To run MiniBar, you need the following flags: `--demultgo y --demult minibar --mbseqs [ ] --mb_idx_dist [ ] --mb_pr_dist [ ]`.
 
-The pipeline filters reads by read quality Phred score abd read length by a buffer you set around the amplicon length provided in your input `sample_list.txt` file: `--filt y --qs [ ] --buffer [ ]`.
+The pipeline filters by read quality with a Phred score threshold and by read length with a buffer you set around the amplicon length provided in your input `sample_list.txt` file: `--filt y --qs [ ] --buffer [ ]`.
 
-Next, you can choose to analyze the full dataset (`--subgo y --subset none`) or subsets of the data (`--subgo y --subset 500` for 500 read sample of the data).
+Next, you can choose to analyze the full demultiplexed and filtered dataset (`--subgo y --subset none`) or subsets (`--subgo y --subset 500` for 500 read sample of the data) for each sample.
 
-To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum number of reads per cluster (`--perthresh`), a minimum cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`): `--clust y --demult [ ] --subset [ ] --perthresh [ ] --cdhitsim [ ] --db [ ]`.
+To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum percent of reads per isONclust cluster (`--perthresh`), a minimum cd-hit-est cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`): `--clust y --demult [ ] --subset [ ] --perthresh [ ] --cdhitsim [ ] --db [ ]`.
 
-You can run the pipeline steps in pieces, just set the option flags to `n` if you don't want to run those steps.
+You can run the pipeline steps in pieces - just set the required option flags to `n` if you don't want to run those steps.
 
 Example commands:
 ```
-# Run all steps of pipeline
+# Run all steps of pipeline at once
 python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo y --clust y --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001 --qs 7 --buffer 100 --subset 50 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
 
 # Run only through filtering
 python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo n --clust n --demult minibar --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 --qs 7 --buffer 100
 
-# Run only the subsetting and clustering steps
+# Run only the subsetting and clustering steps (assuming the previous steps had already been run)
 python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP n --demultgo n --filt n --subgo y --clust y --demult minibar --subset 50 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
 ```
 
@@ -198,29 +205,29 @@ REQUIRED flags:
 
 Flag | Description
 --- | ---
---datID | dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)
+--datID | dataset identifer; typically yearmonthdate of sequence run (e.g., 20190906 for Sept 6, 2019); **must match the label used for `sample_list.txt` and `primerindex.txt` files**
 --samps | tab-delimited text file of sample names, barcode, barcode length, index name (e.g., 20190906_sample_list.txt)
 --rawNP | Option to generate NanoPlots for raw reads. Options: y, n
---demultgo | Option to demultiplex reads. Options: y, n. MiniBar requires --demult, --mbseqs, --mb_idx_dist, --mb_pr_dist. Qcat requires --qcat_minscore, --ONTbarcodekit flags
+--demultgo | Option to demultiplex reads. Options: y, n. MiniBar requires --demult, --mbseqs, --mb_idx_dist, --mb_pr_dist. Qcat requires --demult, --qcat_minscore, --ONTbarcodekit flags
 --filt | Option to filter demultiplexed reads. Options: y, n. Requires --qs, --buffer flags
 --subgo | Option to make random data subsets. Options: y, n. Requires --subset flag
---clust | Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --perthresh, --db flags
+--clust | Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --perthresh, --cdhitsim, --db flags
 
 Additional flags:
 
 Flag | Description
 --- | ---
---demult | Options: qcat, minibar
---mbseqs | For MiniBar demultiplexing, input barcode and primer seqs file (e.g., 20190906_primerindex.txt)
+--demult | Options: `qcat`, `minibar`
+--mbseqs | For MiniBar demultiplexing, input primer and index seqs file (e.g., 20190906_primerindex.txt)
 --mb_idx_dist | MiniBar index edit distance (e.g., 2)
 --mb_pr_dist | MiniBar primer edit distance (e.g., 11)
 --qcat_minscore | qcat minimum alignment score (0-100 scale)
 --ONTbarcodekit | ONT barcode kit (e.g., PBC001)
 --qs | Phred quality score threshold to filter reads by
 --buffer | Buffer length +/- amplicon length to filter reads by
---subset | Options: none OR integer subset of reads to be randomly selected (e.g., 500)
+--subset | Options: `none` OR integer subset of reads to be randomly selected (e.g., 500)
 --perthresh | Percent read threshold for keeping isONclust clusters (e.g., 0.1 for keeping clusters with >= 10% of reads)
---cdhitsim | Sequence similarity threshold for cd-hit-est to cluster reads by (e.g., 0.8 for clustering reads with at least 80% similarity)
+--cdhitsim | Sequence similarity threshold for cd-hit-est to cluster spoa consensus sequences by (e.g., 0.8 for clustering spoa consensus with at least 80% similarity)
 --db | Blast reference database fasta file
 
 <a href="#top">Back to top</a>
@@ -243,7 +250,7 @@ Note: The demo files have already been basecalled.
 
 2. Run pipeline:
   - Open the `pipe_batcher.sh` script. Edit python command as needed for script options. Demo dataset commands are at the top.
-  - Run: `bash pipe_batcher.sh`
+  - Run: `bash pipe_batcher.sh` in terminal
 
 3. Check output results:
   - Outputs from Blast search are in `FinalResults/` (`allsamps_parsedout.txt` files)
@@ -251,18 +258,19 @@ Note: The demo files have already been basecalled.
 <a href="#top">Back to top</a>
 
 ### Run your data <a name="yourdat"></a>
-1. Add your data input files.
+1. Add your data input files (see <a name="inputs"></a>)
 
-2. Basecall MinKNOW files.
+2. Basecall MinKNOW fast5 files with this command. Note that the directory paths are separated with spaces! The `guppy_basecalling_wrapper.sh` script requires the path to fast5 files, the output path, and the directory path for SAIGA (should be `./` since commands are executed from within the SAIGA directory!).
+
+Example: 
 ```
-cd Pipeline_scripts
-bash guppy_basecalling_wrapper.sh 0_MinKNOW_rawdata/[directory with MinKNOW files] 1_guppybasecalled [Pipeline home path]
+bash ./Pipeline_scripts/guppy_basecalling_wrapper.sh 0_MinKNOW_rawdata/demo_minknow/fast5 demo_guppybasecallouts ./
 ```
 3. Run rest of pipeline.
 
-You can simply run the pipeline via the `python devo_wrapper.py [flags]` command, or if you have many datasets or analyses to do, you can write all the python commands into the `pipe_batcher.sh` and run them all via the `bash pipe_batcher.sh` command. The pipeline has been tested on small barcoding datasets, and so it has not been necessary to parallelize, though you can certainly write your own code for that!
+You can simply run the pipeline with `python devo_wrapper.py [flags]`, but if you have many datasets or analyses to do, you can write all the python commands into the `pipe_batcher.sh` and run them all with `bash pipe_batcher.sh`.
 - *Edit `pipe_batcher.sh`:*
-    - This is the script that runs through all the pipeline steps. You need to comment out the demo version commands (add ‘#’ to the beginning of the lines).
+    - This is the script that runs through all the pipeline steps for multiple datasets//analyses. You need to comment out the demo version commands (add ‘#’ to the beginning of the lines) so they aren't run.
     - Then edit the python command flags with appropriate dataset name, files, and parameter values. You need to set the following flags to `y` or `n` to tell the pipeline whether to:
       - `--rawNP`: concatenate raw basecalled fastq files, output NanoPlot stats
       - `--demultgo`: demultiplex reads
