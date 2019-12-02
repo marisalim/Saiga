@@ -1,10 +1,9 @@
 # SAIGA: A user-friendly DNA barcoding bioinformatics pipeline for MinION sequencing
 
-<p align="center">
-<img src='saiga logo 3.5.jpg' width='200' height='200'>
-<em>Saiga logo by Natalie Tam</em>
+<img align='left' src='saiga logo 3.5.jpg' width='200' height='200'>
 
 Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*) conservation.
+[Saiga logo by Natalie Tam]
 
 If you use our pipeline, please cite:
 
