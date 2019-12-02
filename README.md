@@ -4,10 +4,15 @@
 
 The SAIGA pipeline was designed for processing and analyzing Oxford Nanopore Technologies (ONT) MinION DNA-barcoding sequence data. 
 
-Our pipeline is called SAIGA to help bring awareness to conservation efforts for the critically endangered Saiga (*Saiga tatarica*).
+Our pipeline is called SAIGA to help bring awareness to conservation efforts for the Critically endangered Saiga (*Saiga tatarica*).
 
->add more about Saiga species threats and conservation efforts!
-
+- Saiga populations have declined 80% between 1998 - 2018, according to the IUCN Red List
+    - https://medium.com/@WCS/saving-the-saiga-6829a429abeb
+- threats to Saiga:
+    -  "habitat degradation, migration barriers in the form of infrastructure, changing climatic conditions that have altered food availability, and illegal hunting of males for their horns (an ingredient in traditional Asian medicine)."
+    - disease
+ - regulation
+    - 2019 COP: "Stays on Appendix II But With Zero Quota from the Wild – Meaning No International Trade of Saiga Horn from the Wild"
 
 [Saiga logo by Natalie Tam]
 
