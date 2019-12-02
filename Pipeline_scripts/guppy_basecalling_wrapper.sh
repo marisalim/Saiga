@@ -5,11 +5,11 @@
 # Nanopore Minion sequence data
 #
 # Primary use is for running single dataset with one command:
-#   example: bash guppy_basecalling_wrapper.sh /20180206_1431_1DNB_FISHCOI_6Feb2018/fast5 20180206 FLO-MIN106 SQK-LSK109 20180206_guppybasecallouts
+#   example: bash guppy_basecalling_wrapper.sh /20180206_1431_1DNB_FISHCOI_6Feb2018/fast5 20180206_guppybasecallouts ./
 #
 # Dependency:
 #   Guppy v 2.3.7 (download from Nanopore software page)
-# March 2019
+# Dec 2019
 # ---------------------------------------------
 
 # Source path for guppy
