@@ -2,7 +2,7 @@
 
 <img align='left' src='saiga logo 3.5.jpg' width='200' height='200'>
 
-Our pipeline is called SAIGA to help bring awareness to Saiga (*Saiga tatarica*) conservation.
+Our pipeline is called SAIGA to help bring awareness to conservation efforts for the critically endangered Saiga (*Saiga tatarica*).
 [Saiga logo by Natalie Tam]
 
 If you use our pipeline, please cite:
