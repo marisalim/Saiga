@@ -4,21 +4,19 @@
 
 The SAIGA pipeline was designed for processing and analyzing Oxford Nanopore Technologies (ONT) MinION DNA-barcoding sequence data. 
 
-Our pipeline is called SAIGA to help bring awareness to conservation efforts for the Critically endangered Saiga (*Saiga tatarica*).
+Our pipeline is called SAIGA to help bring awareness to conservation efforts for the Critically endangered Saiga (*Saiga tatarica*). Saiga populations are threatened by habitat loss and fragmentation, illegal wildlife trade (meat, horn from males), and disease. Consequently, in addition to population size crashes, the sex ratio has been skewed due to preferential hunting of males for their horns. Saiga horn is the primary component of several Traditional Chinese Medicines that claim to detox and treat colds and lung disease, although saiga horn has no scientifically recognized medicinal value <sup>1,2</sup>. As of the 2019, the CITES Conference of Parties voted to keep saiga on the CITES Appendix II list, but there is now a zero quota for the international trade on wild saiga horn <sup>3</sup>.  
 
-- Saiga populations have declined 80% between 1998 - 2018, according to the IUCN Red List
-    - https://medium.com/@WCS/saving-the-saiga-6829a429abeb
-- threats to Saiga:
-    -  "habitat degradation, migration barriers in the form of infrastructure, changing climatic conditions that have altered food availability, and illegal hunting of males for their horns (an ingredient in traditional Asian medicine)."
-        - "In ‘New-Edited Chinese Patent Medicine’ published in 2002, saiga horn is the main component of 18 kinds of medicines for detoxification, cold treatment and lung disease. In addition to medicine, people can use horns directly, cut them into powder or slices, and boil them in water. This decoction can either be taken together with other decoctions or separately." 
-        - https://china.wcs.org/Wildlife/Saiga-Antelope.aspx
-    - disease
- - regulation
-    - 2019 COP: "Stays on Appendix II But With Zero Quota from the Wild – Meaning No International Trade of Saiga Horn from the Wild"
+<sup>1</sup> https://china.wcs.org/Wildlife/Saiga-Antelope.aspx
 
-[Saiga logo by Natalie Tam]
+<sup>2</sup> https://medium.com/@WCS/saving-the-saiga-6829a429abeb
 
-If you use our pipeline, please cite:
+<sup>3</sup> https://newsroom.wcs.org/News-Releases/articleType/ArticleView/articleId/12926/BREAKING-NEWS-From-CITES-CoP18-on-Saiga-Antelope.aspx
+
+Saiga logo by Natalie Tam
+
+### If you use our pipeline, please cite:
+*"MinION-based DNA-barcoding of preserved and non-invasively collected wildlife samples"*
+Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 
 -------------
 
