@@ -306,7 +306,7 @@ def filtered_nanoplots(toplotpath, NanoPlot_filteredout_path):
     time.sleep(1.0)
 
     for thefastqs in os.listdir(toplotpath):
-        if '_filtered.fastq' in thefastqs:
+        if '_filtered' in thefastqs:
             mysampname = thefastqs.split('.')[0]
 
             commands = """
