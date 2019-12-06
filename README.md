@@ -1,6 +1,6 @@
 # SAIGA: A user-friendly DNA barcoding bioinformatics pipeline for MinION sequencing
 
-<img align='left' src='saiga logo 3.5.jpg' width='200' height='200'>
+<img align='left' src='/readme_imgs/saiga logo 3.5.jpg' width='200' height='200'>
 
 The SAIGA pipeline was designed for processing and analyzing Oxford Nanopore Technologies (ONT) MinION DNA-barcoding sequence data. 
 
@@ -20,7 +20,7 @@ Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 
 -------------
 
-<img src='clstrpipe2019workflow.png' width='500' height='700'>
+<img src='readme_imgs/clstrpipe2019workflow.png' width='500' height='700'>
 
 -------------
 # Table of contents
