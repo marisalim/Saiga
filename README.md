@@ -15,7 +15,7 @@ Our pipeline is called SAIGA to help bring awareness to conservation efforts for
 Saiga logo by Natalie Tam
 
 ### If you use our pipeline, please cite:
-*"MinION-based DNA-barcoding of preserved and non-invasively collected wildlife samples"*
+*"MinION-based DNA barcoding of preserved and non-invasively collected wildlife samples"*
 Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 
 -------------
