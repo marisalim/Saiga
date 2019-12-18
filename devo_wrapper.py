@@ -24,7 +24,7 @@
 # - qcat v1.1.0
 # - MiniBar v0.21
 # - seqtk v1.3-r106
-# - isONclust v0.0.4
+# - isONclust v0.0.6
 # - spoa v3.0.1
 # - cd-hit-est v4.8.1
 # - medaka v0.10.0
@@ -385,10 +385,10 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         echo 'Clustering...'
         isONclust --fastq {5} --ont --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
         echo 'Writing isONclust cluster fastqs...'
-        isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.csv \
+        isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.tsv \
         --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
         echo 'Count reads per cluster...(also, remove space in front of number of reads)'
-        cut -f 1 {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.csv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt
+        cut -f 1 {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.tsv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt
         python {0}/isonclust_parser.py --sampID {6} --perthresh {7} \
         --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
         --scripthome {0} \
