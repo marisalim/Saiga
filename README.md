@@ -42,7 +42,7 @@ Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 - qcat v1.1.0
 - MiniBar v0.21
 - seqtk v1.3-r106
-- isONclust v0.0.4
+- isONclust v0.0.6
 - spoa v3.0.1
 - cd-hit-est v4.8.1
 - medaka v0.10.0
