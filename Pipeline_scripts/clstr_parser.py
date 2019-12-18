@@ -105,7 +105,7 @@ if cdhit_df.empty == False:
                     SeqIO.write(fasta, out_file, 'fasta')
     print('Now, we can make a fastq file of just reads from subsetted clusters...')
 
-    finalclstrs = pd.read_csv(arg_dict['output_dir'] + 'final_clusters.csv', header=None, sep='\t')
+    finalclstrs = pd.read_csv(arg_dict['output_dir'] + 'final_clusters.tsv', header=None, sep='\t')
     finalclstrs.columns = ['IsoID', 'ReadID']
     finalclstrs['DummyID'] = '0'
     finalclstrs_subset = finalclstrs.loc[finalclstrs['IsoID'].isin(clstrID_ls), ]
