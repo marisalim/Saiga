@@ -189,7 +189,7 @@ Saiga was written to implement demultiplexing by either qcat or MiniBar. qcat ca
 
 The pipeline filters by read quality with a Phred score threshold and by read length with a buffer you set around the amplicon length provided in your input `sample_list.txt` file: `--filt y --qs [ ] --buffer [ ]`.
 
-Next, you can choose to analyze the full demultiplexed and filtered dataset (`--subgo y --subset none`) or subsets (`--subgo y --subset 500` for 500 read sample of the data) for each sample.
+Next, you can choose to analyze the full demultiplexed and filtered dataset (`--subgo y --subset none`) or subsets (`--subgo y --subset 500 --subseed 100` for 500 read random sample of the data) for each sample.
 
 To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum percent of reads per isONclust cluster (`--perthresh`), a minimum cd-hit-est cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`): `--clust y --demult [ ] --subset [ ] --perthresh [ ] --cdhitsim [ ] --db [ ]`.
 
@@ -198,13 +198,13 @@ You can run the pipeline steps in pieces - just set the required option flags to
 Example commands:
 ```
 # Run all steps of pipeline at once
-python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo y --clust y --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001 --qs 7 --buffer 100 --subset 50 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
+python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo y --clust y --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001 --qs 7 --buffer 100 --subset 50 --subseed 100 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
 
 # Run only through filtering
 python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo n --clust n --demult minibar --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 --qs 7 --buffer 100
 
 # Run only the subsetting and clustering steps (assuming the previous steps had already been run)
-python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP n --demultgo n --filt n --subgo y --clust y --demult minibar --subset 50 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
+python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP n --demultgo n --filt n --subgo y --clust y --demult minibar --subset 50 --subseed 100 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
 ```
 
 REQUIRED flags:
@@ -232,6 +232,7 @@ Flag | Description
 --qs | Phred quality score threshold to filter reads by
 --buffer | Buffer length +/- amplicon length to filter reads by
 --subset | Options: `none` OR integer subset of reads to be randomly selected (e.g., 500)
+--subseed | seed number to create random data subsets with seqtk
 --perthresh | Percent read threshold for keeping isONclust clusters (e.g., 0.1 for keeping clusters with >= 10% of reads)
 --cdhitsim | Sequence similarity threshold for cd-hit-est to cluster spoa consensus sequences by (e.g., 0.8 for clustering spoa consensus with at least 80% similarity)
 --db | Blast reference database fasta file
