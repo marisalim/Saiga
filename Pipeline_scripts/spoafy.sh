@@ -13,7 +13,7 @@ clstr_file=$1
 spoa $clstr_file > $clstr_file.spoa
 
 # rename file and fasta header
-awk -v var=">clstr$(echo $clstr_file.spoa | rev | cut -f1 -d/ |rev |cut -f1 -d.)" 'NR==1{print var "|" $0;}END{print $0" "}' $clstr_file.spoa > $(echo $clstr_file.spoa | rev | cut -f3 -d. | rev)_spoa.fasta
+awk -v var=">clstr$(echo $clstr_file.spoa | rev | cut -f1 -d/ |rev |cut -f1 -d.)" 'NR==1{print var "|" $0;}END{print $0" "}' $clstr_file.spoa > $(echo $clstr_file.spoa | rev | cut -f3,4 -d. | rev)_spoa.fasta
 
 rm $clstr_file.spoa
 
