@@ -298,7 +298,7 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
         time.sleep(0.5)
         print('######################################################################')
 
-def filtered_nanoplots(toplotpath, NanoPlot_filteredout_path):
+def filtered_nanoplots(toplotpath, NanoPlot_filteredout_path, myseed):
     print('######################################################################')
     print('Create NanoPlots for all filtered demultiplexed sample fastq files.')
     print('######################################################################')
@@ -311,12 +311,12 @@ def filtered_nanoplots(toplotpath, NanoPlot_filteredout_path):
 
             commands = """
             echo 'For demultiplexed files in: {0}'
-            echo 'Plotting NanoPlot for sample: {2}.fastq'
+            echo 'Plotting NanoPlot for sample: {2}.{3}.fastq'
             echo 'NanoPlot outputs: {1}'
             echo 'NanoPlot outputs ID: {2}_dem'
             echo '-------------------------------------------------------------'
-            NanoPlot --fastq {0}/{2}.fastq -o {1} -p {2}_dem --plots kde
-            """.format(toplotpath, NanoPlot_filteredout_path, mysampname)
+            NanoPlot --fastq {0}{2}.{3}.fastq -o {1} -p {2}_dem --plots kde
+            """.format(toplotpath, NanoPlot_filteredout_path, mysampname, myseed)
 
             command_list = commands.split('\n')
             for cmd in command_list:
@@ -373,7 +373,7 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
             fastqfile = demultiplexed_path + datasetID + samp_files.at[i, 'sampleID']+ '_filtered.fastq'
             # print(fastqfile)
         else:
-            fastqfile = demultiplexed_path + datasetID + '_' + str(thesub) + 'sub_/' + str(myseed) + '/' + datasetID + samp_files.at[i, 'sampleID']+ '_filtered' + str(thesub) + '.' + str(myseed) + '.fastq'
+            fastqfile = demultiplexed_path + datasetID + '_' + str(thesub) + 'sub_' + str(myseed) + '/' + datasetID + samp_files.at[i, 'sampleID']+ '_filtered' + str(thesub) + '.' + str(myseed) + '.fastq'
             # print(fastqfile)
 
         commands = """
@@ -508,10 +508,10 @@ def stat_parse(scripthome, toppath, basecallout_path, demultiplexed_path, datase
         --blastdbheaders {8}HEADERS.txt \
         --rawfq {2}/{4}.fastq \
         --demultfq {3}/{4}_{7}sub_{9}/{4}{5}_filtered{7}.{9}.fastq \
-        --isocount {1}/3_readclustering/{4}_{6}{7}.{2}readclstrs/{5}_clstrs/reads_per_cluster.txt \
-        --cdhitclstrs {1}/3_readclustering/{4}_{6}{7}.{2}readclstrs/{5}_clstrs/cdhit_{5}.fasta.clstr \
-        --mkout {1}/4_spID/{4}_{6}{7}.{2}_spID/mk_{5}/consensus.fasta \
-        --output_dir {1}/4_spID/{4}_{6}{7}.{2}_spID/mk_{5}/
+        --isocount {1}/3_readclustering/{4}_{6}{7}.{9}readclstrs/{5}_clstrs/reads_per_cluster.txt \
+        --cdhitclstrs {1}/3_readclustering/{4}_{6}{7}.{9}readclstrs/{5}_clstrs/cdhit_{5}.fasta.clstr \
+        --mkout {1}/4_spID/{4}_{6}{7}.{9}_spID/mk_{5}/consensus.fasta \
+        --output_dir {1}/4_spID/{4}_{6}{7}.{9}_spID/mk_{5}/
         """.format(scripthome, toppath, basecallout_path, demultiplexed_path, datasetID, mysamp, thedemult, thesub, blastdb, myseed)
 
         command_list = commands.split('\n')
@@ -678,7 +678,8 @@ def main():
                 NanoPlot_filteredout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_filtered_NanoPlots/'
                 toplotpath = demultiplexed_path
                 demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path)
-                filtered_nanoplots(toplotpath, NanoPlot_filteredout_path)
+                myseed = '' #dummy variable
+                filtered_nanoplots(toplotpath, NanoPlot_filteredout_path, myseed)
                 fulldat_nanostats(scripthome, demultiplexed_path, arg_dict['datID'], arg_dict['demult'], toppath)
             else:
                 print('Subsetting demultiplexed reads by your subset choice...')
@@ -691,7 +692,7 @@ def main():
                 print('Note: currently code does not output NanoPlots for uncategorized reads if you chose to generate data subsets.')
                 NanoPlot_filteredout_path = subdir + '/' + arg_dict['datID'] + '_filtered_NanoPlots/'
                 toplotpath = subdir + '/'
-                filtered_nanoplots(toplotpath, NanoPlot_filteredout_path)
+                filtered_nanoplots(toplotpath, NanoPlot_filteredout_path, myseed)
         elif arg_dict['subgo'] == 'n':
             pass
 
