@@ -274,7 +274,7 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
         time.sleep(1.0)
 
         for thefastqs in os.listdir(toplotpath):
-            if '_filtered.fastq' not in thefastqs:
+            if '.fastq' in thefastqs and '_filtered.fastq' not in thefastqs:
                 mysampname = thefastqs.split('.')[0]
 
                 commands = """
@@ -283,7 +283,7 @@ def demultiplexed_nanoplots(toplotpath, NanoPlot_demultiplexedout_path):
                 echo 'NanoPlot outputs: {1}'
                 echo 'NanoPlot outputs ID: {2}_dem'
                 echo '-------------------------------------------------------------'
-                NanoPlot --fastq {0}/{2}.fastq -o {1} -p {2}_dem --plots kde
+                NanoPlot --fastq {0}{2}.fastq -o {1} -p {2}_dem --plots kde
                 """.format(toplotpath, NanoPlot_demultiplexedout_path, mysampname)
 
                 command_list = commands.split('\n')
@@ -306,21 +306,40 @@ def filtered_nanoplots(toplotpath, NanoPlot_filteredout_path, myseed):
     time.sleep(1.0)
 
     for thefastqs in os.listdir(toplotpath):
-        if '_filtered' in thefastqs:
-            mysampname = thefastqs.split('.')[0]
+        if myseed == '':
+        # this is for the case where there is no subset and thus no subset seed number
+            if '.fastq' in thefastqs and '_filtered' in thefastqs:
+                mysampname = thefastqs.split('.')[0]
 
-            commands = """
-            echo 'For demultiplexed files in: {0}'
-            echo 'Plotting NanoPlot for sample: {2}.{3}.fastq'
-            echo 'NanoPlot outputs: {1}'
-            echo 'NanoPlot outputs ID: {2}_dem'
-            echo '-------------------------------------------------------------'
-            NanoPlot --fastq {0}{2}.{3}.fastq -o {1} -p {2}_dem --plots kde
-            """.format(toplotpath, NanoPlot_filteredout_path, mysampname, myseed)
+                commands = """
+                echo 'For demultiplexed files in: {0}'
+                echo 'Plotting NanoPlot for sample: {2}.fastq'
+                echo 'NanoPlot outputs: {1}'
+                echo 'NanoPlot outputs ID: {2}_dem'
+                echo '-------------------------------------------------------------'
+                NanoPlot --fastq {0}{2}.fastq -o {1} -p {2}_dem --plots kde
+                """.format(toplotpath, NanoPlot_filteredout_path, mysampname)
 
-            command_list = commands.split('\n')
-            for cmd in command_list:
-                os.system(cmd)
+                command_list = commands.split('\n')
+                for cmd in command_list:
+                    os.system(cmd)
+        else:
+            if '.fastq' in thefastqs and '_filtered' in thefastqs:
+                mysampname = thefastqs.split('.')[0]
+
+                commands = """
+                echo 'For demultiplexed files in: {0}'
+                echo 'Plotting NanoPlot for sample: {2}.{3}.fastq'
+                echo 'NanoPlot outputs: {1}'
+                echo 'NanoPlot outputs ID: {2}_dem'
+                echo '-------------------------------------------------------------'
+                NanoPlot --fastq {0}{2}.{3}.fastq -o {1} -p {2}_dem --plots kde
+                """.format(toplotpath, NanoPlot_filteredout_path, mysampname, myseed)
+
+                command_list = commands.split('\n')
+                for cmd in command_list:
+                    os.system(cmd)
+
 
     print('Done plotting NanoPlots.')
     sys.stdout.flush()
@@ -372,82 +391,158 @@ def read_clstr_cons(scripthome, toppath, demultiplexed_path, datasetID, samp_fil
         if thesub == 'none':
             fastqfile = demultiplexed_path + datasetID + samp_files.at[i, 'sampleID']+ '_filtered.fastq'
             # print(fastqfile)
+
+            commands = """
+            if [ ! -d '{1}/3_readclustering/{2}_{3}{4}readclstrs' ]; \
+            then mkdir {1}/3_readclustering/{2}_{3}{4}readclstrs; fi
+            echo 'Input fastq: {5}'
+            echo 'Output folder: {1}/3_readclustering/{2}_{3}{4}readclstrs'
+            echo '-------------------------------------------------------------'
+            echo 'Clustering...'
+            isONclust --fastq {5} --ont --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+            echo 'Writing isONclust cluster fastqs...'
+            isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.tsv \
+            --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
+            echo 'Count reads per cluster...(also, remove space in front of number of reads)'
+            cut -f 1 {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters.tsv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt
+            python {0}/isonclust_parser.py --sampID {6} --perthresh {7} \
+            --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
+            --scripthome {0} \
+            --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+            echo '-------------------------------------------------------------'
+            """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
+
+            command_list = commands.split('\n')
+            for cmd in command_list:
+                os.system(cmd)
+
+            # if spoa files exist, move on, otherwise, move on to next sample with error
+            spoa_path = toppath + '/3_readclustering/' + datasetID + '_' + thedemult+str(thesub)+'readclstrs/'+mysamp +'_clstrs/clstr_fqs/'
+            if len(glob.glob(spoa_path + '*_spoa.fasta')) != 0:
+                commands2 = """
+                echo 'Make combined consensus seq file...'
+                cat {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
+                echo '-------------------------------------------------------------'
+                echo 'Check for reverse/complement...'
+                bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta {8}
+                python {0}/clstr_parser.py --sampID {6} \
+                --isocount {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/reads_per_cluster.txt \
+                --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
+                --spoaseqs {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
+                --output_dir {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/
+                """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
+
+                command_list2 = commands2.split('\n')
+                for cmd in command_list2:
+                    os.system(cmd)
+
+                # if subset clstr file exists, move on, otherwise move to next sample after error msg
+                if glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') != 0:
+                    commands3 = """
+                    echo 'Next, generate new write_fastq file as input for Medaka...'
+                    isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/final_clusters_subset.csv \
+                    --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka --N 1
+                    echo 'Make fasta sequential instead of interleaved...'
+                    bash {0}/fastaformatter.sh \
+                    {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka.fasta \
+                    {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta
+                    echo '-------------------------------------------------------------'
+                    echo 'Error correction with Medaka...'
+                    bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}_spID/mk_{6}
+                    """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh)
+
+                    command_list3 = commands3.split('\n')
+                    for cmd in command_list3:
+                        os.system(cmd)
+
+                elif glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') == 0:
+                    print('WARNING! Read cd-hit threshold too high, no clusters. Please adjust the cdhitsim parameter (but must be >= 0.8).')
+                    print('Check results for: ', mysamp)
+                    pass
+
+            elif glob.glob(spoa_path + '*_spoa.fasta') == 0:
+                print('WARNING! Read clusters are smaller than your threshold. Please adjust the perthresh parameter. No spoa files made.')
+                print('Check results for: ', mysamp)
+                pass
+
         else:
             fastqfile = demultiplexed_path + datasetID + '_' + str(thesub) + 'sub_' + str(myseed) + '/' + datasetID + samp_files.at[i, 'sampleID']+ '_filtered' + str(thesub) + '.' + str(myseed) + '.fastq'
             # print(fastqfile)
 
-        commands = """
-        if [ ! -d '{1}/3_readclustering/{2}_{3}{4}.{9}readclstrs' ]; \
-        then mkdir {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs; fi
-        echo 'Input fastq: {5}'
-        echo 'Output folder: {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs'
-        echo '-------------------------------------------------------------'
-        echo 'Clustering...'
-        isONclust --fastq {5} --ont --outfolder {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/
-        echo 'Writing isONclust cluster fastqs...'
-        isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/final_clusters.tsv \
-        --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
-        echo 'Count reads per cluster...(also, remove space in front of number of reads)'
-        cut -f 1 {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/final_clusters.tsv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/reads_per_cluster.txt
-        python {0}/isonclust_parser.py --sampID {6} --perthresh {7} \
-        --isocount {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/reads_per_cluster.txt \
-        --scripthome {0} \
-        --output_dir {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/
-        echo '-------------------------------------------------------------'
-        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh, str(myseed))
-
-        command_list = commands.split('\n')
-        for cmd in command_list:
-            os.system(cmd)
-
-        # if spoa files exist, move on, otherwise, move on to next sample with error
-        spoa_path = toppath + '/3_readclustering/' + datasetID + '_' + thedemult+str(thesub)+'.'+str(myseed)+'readclstrs/'+mysamp +'_clstrs/clstr_fqs/'
-        if len(glob.glob(spoa_path + '*_spoa.fasta')) != 0:
-            commands2 = """
-            echo 'Make combined consensus seq file...'
-            cat {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
+            commands = """
+            if [ ! -d '{1}/3_readclustering/{2}_{3}{4}.{9}readclstrs' ]; \
+            then mkdir {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs; fi
+            echo 'Input fastq: {5}'
+            echo 'Output folder: {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs'
             echo '-------------------------------------------------------------'
-            echo 'Check for reverse/complement...'
-            bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/cdhit_{6}.fasta {8}
-            python {0}/clstr_parser.py --sampID {6} \
+            echo 'Clustering...'
+            isONclust --fastq {5} --ont --outfolder {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/
+            echo 'Writing isONclust cluster fastqs...'
+            isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/final_clusters.tsv \
+            --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/clstr_fqs/ --N 1
+            echo 'Count reads per cluster...(also, remove space in front of number of reads)'
+            cut -f 1 {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/final_clusters.tsv | sort -n | uniq -c | sort -rn | sed 's/^[ \t]*//;s/[ \t]*$//' > {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/reads_per_cluster.txt
+            python {0}/isonclust_parser.py --sampID {6} --perthresh {7} \
             --isocount {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/reads_per_cluster.txt \
-            --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
-            --spoaseqs {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
+            --scripthome {0} \
             --output_dir {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/
+            echo '-------------------------------------------------------------'
             """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh, str(myseed))
 
-            command_list2 = commands2.split('\n')
-            for cmd in command_list2:
+            command_list = commands.split('\n')
+            for cmd in command_list:
                 os.system(cmd)
 
-            # if subset clstr file exists, move on, otherwise move to next sample after error msg
-            if glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'.'+str(myseed)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') != 0:
-                commands3 = """
-                echo 'Next, generate new write_fastq file as input for Medaka...'
-                isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/final_clusters_subset.csv \
-                --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/readsformedaka --N 1
-                echo 'Make fasta sequential instead of interleaved...'
-                bash {0}/fastaformatter.sh \
-                {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/formedaka.fasta \
-                {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/formedaka_singleline.fasta
+            # if spoa files exist, move on, otherwise, move on to next sample with error
+            spoa_path = toppath + '/3_readclustering/' + datasetID + '_' + thedemult+str(thesub)+'.'+str(myseed)+'readclstrs/'+mysamp +'_clstrs/clstr_fqs/'
+            if len(glob.glob(spoa_path + '*_spoa.fasta')) != 0:
+                commands2 = """
+                echo 'Make combined consensus seq file...'
+                cat {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/clstr_fqs/*_spoa.fasta > {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta
                 echo '-------------------------------------------------------------'
-                echo 'Error correction with Medaka...'
-                bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}.{9}_spID/mk_{6}
+                echo 'Check for reverse/complement...'
+                bash {0}/revcomp_check.sh {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/cdhit_{6}.fasta {8}
+                python {0}/clstr_parser.py --sampID {6} \
+                --isocount {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/reads_per_cluster.txt \
+                --cdhitclstrs {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/cdhit_{6}.fasta.clstr \
+                --spoaseqs {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/all_clstr_conseqs.fasta \
+                --output_dir {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/
                 """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh, str(myseed))
 
-                command_list3 = commands3.split('\n')
-                for cmd in command_list3:
+                command_list2 = commands2.split('\n')
+                for cmd in command_list2:
                     os.system(cmd)
 
-            elif glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'.'+str(myseed)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') == 0:
-                print('WARNING! Read cd-hit threshold too high, no clusters. Please adjust the cdhitsim parameter (but must be >= 0.8).')
+                # if subset clstr file exists, move on, otherwise move to next sample after error msg
+                if glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'.'+str(myseed)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') != 0:
+                    commands3 = """
+                    echo 'Next, generate new write_fastq file as input for Medaka...'
+                    isONclust write_fastq --clusters {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/final_clusters_subset.csv \
+                    --fastq {5} --outfolder {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/readsformedaka --N 1
+                    echo 'Make fasta sequential instead of interleaved...'
+                    bash {0}/fastaformatter.sh \
+                    {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/formedaka.fasta \
+                    {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/formedaka_singleline.fasta
+                    echo '-------------------------------------------------------------'
+                    echo 'Error correction with Medaka...'
+                    bash {0}/medaka_corr.sh {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/readsformedaka/0.fastq {1}/3_readclustering/{2}_{3}{4}.{9}readclstrs/{6}_clstrs/formedaka_singleline.fasta {1}/4_spID/{2}_{3}{4}.{9}_spID/mk_{6}
+                    """.format(scripthome, toppath, datasetID, thedemult, str(thesub), fastqfile, mysamp, myperthresh, cdhit_seqsim_thresh, str(myseed))
+
+                    command_list3 = commands3.split('\n')
+                    for cmd in command_list3:
+                        os.system(cmd)
+
+                elif glob.glob(toppath + '/3_readclustering/'+datasetID + '_' + thedemult+str(thesub)+'.'+str(myseed)+'readclstrs/'+mysamp +'_clstrs/final_clusters_subset.csv') == 0:
+                    print('WARNING! Read cd-hit threshold too high, no clusters. Please adjust the cdhitsim parameter (but must be >= 0.8).')
+                    print('Check results for: ', mysamp)
+                    pass
+
+            elif glob.glob(spoa_path + '*_spoa.fasta') == 0:
+                print('WARNING! Read clusters are smaller than your threshold. Please adjust the perthresh parameter. No spoa files made.')
                 print('Check results for: ', mysamp)
                 pass
 
-        elif glob.glob(spoa_path + '*_spoa.fasta') == 0:
-            print('WARNING! Read clusters are smaller than your threshold. Please adjust the perthresh parameter. No spoa files made.')
-            print('Check results for: ', mysamp)
-            pass
+
 
     print('Done with read clustering, consensus building, & error correcting.')
     print('######################################################################')
@@ -463,18 +558,32 @@ def blastoff(scripthome, toppath, datasetID, samp_files, thesub, thedemult, blas
     for i in samp_files.index:
         mysamp = samp_files.at[i, 'sampleID']
 
-        commands="""
-        echo 'Blast database: {6}'
-        echo 'Blast searching...'
-        bash {0}/blast_local_wrapper.sh \
-        {6} \
-        {1}/4_spID/{2}_{3}{4}.{7}_spID/mk_{5}/consensus.fasta \
-        {1}/4_spID/{2}_{3}{4}.{7}_spID/mk_{5}/{5}blastout
-        """.format(scripthome, toppath, datasetID, thedemult, str(thesub), mysamp, blastdb, str(myseed))
+        if myseed == '':
+            commands="""
+            echo 'Blast database: {6}'
+            echo 'Blast searching...'
+            bash {0}/blast_local_wrapper.sh \
+            {6} \
+            {1}/4_spID/{2}_{3}{4}_spID/mk_{5}/consensus.fasta \
+            {1}/4_spID/{2}_{3}{4}_spID/mk_{5}/{5}blastout
+            """.format(scripthome, toppath, datasetID, thedemult, str(thesub), mysamp, blastdb)
 
-        command_list = commands.split('\n')
-        for cmd in command_list:
-            os.system(cmd)
+            command_list = commands.split('\n')
+            for cmd in command_list:
+                os.system(cmd)
+        else:
+            commands="""
+            echo 'Blast database: {6}'
+            echo 'Blast searching...'
+            bash {0}/blast_local_wrapper.sh \
+            {6} \
+            {1}/4_spID/{2}_{3}{4}.{7}_spID/mk_{5}/consensus.fasta \
+            {1}/4_spID/{2}_{3}{4}.{7}_spID/mk_{5}/{5}blastout
+            """.format(scripthome, toppath, datasetID, thedemult, str(thesub), mysamp, blastdb, str(myseed))
+
+            command_list = commands.split('\n')
+            for cmd in command_list:
+                os.system(cmd)
     print('######################################################################')
 
 # Parse outputs...
@@ -700,10 +809,10 @@ def main():
             if arg_dict['subset'] == 'none':
                 print('No subsetting, continuing to next step...')
                 cdhit_seqsim_thresh = arg_dict['cdhitsim']
-                read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh)
+                read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh, arg_dict['subseed'])
 
                 blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-                blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
+                blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb, arg_dict['subseed'])
 
                 stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
             else:
