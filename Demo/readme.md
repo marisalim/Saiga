@@ -10,8 +10,8 @@
 - Move `demo.fasta` to `Blast_resources`
 
 2. Run pipeline:
-- Open the `pipe_batcher.sh` script. Edit python command as needed for script options. Demo dataset commands are at the top.
-- Run: `bash pipe_batcher.sh`
+- Open the `run_saiga.sh` script. Edit python command as needed for script options. Demo dataset commands are at the top.
+- Run: `bash run_saiga.sh`
 
 3. Check output results:
 - Outputs from Blast search are in `4_spID`, as [ ]_allsamps_parsedout.txt files
