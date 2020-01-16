@@ -238,7 +238,7 @@ Flag | Description
 <a href="#top">Back to top</a>
 
 ## Usage: Run SAIGA! <a name="runpipe"></a>
-1. Download this Github repository.
+1. Download this Github repository using the 'Clone or Download' green button at the top of the Github page. 
 1. Set up directories
 ```
 python setuppipe.py
