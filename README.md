@@ -250,6 +250,7 @@ Note: The demo files have already been basecalled.
 1. Go to `Demo/` for input files. The demo files need to be moved to correct pipeline directories:
   - Download demo files
   - Move the entire `demo_guppybasecallouts` directory to `1_basecalled`
+    - unzip the fastq files. In bash terminal, you can enter: `for file in *.fastq.gz; do gunzip $file; done`
   - Move `demo_primerindex.txt` and `demo_sample_list.txt` to `2a_samp_lists`
   - Move `demo.fasta` to `Blast_resources`
 
