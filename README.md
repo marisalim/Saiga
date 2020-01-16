@@ -181,7 +181,7 @@ However the `_primerindex.txt` file currently has to be created manually.
 <a href="#top">Back to top</a>
 
 ## Picking parameters <a name="params"></a>
-The pipeline is written to allow you to run different steps without rerunning all analyses over and over. The flags/options described below should be edited in the `pipe_batcher.sh` script. The top lines of this script run the demo dataset.
+The pipeline is written to allow you to run different steps without rerunning all analyses over and over. The flags/options described below should be edited in the `run_saiga.sh` script. The top lines of this script run the demo dataset.
 
 The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
 
@@ -198,13 +198,13 @@ You can run the pipeline steps in pieces - just set the required option flags to
 Example commands:
 ```
 # Run all steps of pipeline at once
-python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo y --clust y --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001 --qs 7 --buffer 100 --subset 50 --subseed 100 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
+python saiga_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo y --clust y --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001 --qs 7 --buffer 100 --subset 50 --subseed 100 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
 
 # Run only through filtering
-python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo n --clust n --demult minibar --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 --qs 7 --buffer 100
+python saiga_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP y --demultgo y --filt y --subgo n --clust n --demult minibar --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 --qs 7 --buffer 100
 
 # Run only the subsetting and clustering steps (assuming the previous steps had already been run)
-python devo_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP n --demultgo n --filt n --subgo y --clust y --demult minibar --subset 50 --subseed 100 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
+python saiga_wrapper.py --dat demo --samps demo_sample_list.txt --rawNP n --demultgo n --filt n --subgo y --clust y --demult minibar --subset 50 --subseed 100 --perthresh 0.1 --cdhitsim 0.8 --db demo.fasta
 ```
 
 REQUIRED flags:
@@ -256,8 +256,8 @@ Note: The demo files have already been basecalled.
   - Move `demo.fasta` to `Blast_resources`
 
 2. Run pipeline:
-  - Open the `pipe_batcher.sh` script. Edit python command as needed for script options. Demo dataset commands are at the top.
-  - Run: `bash pipe_batcher.sh` in terminal
+  - Open the `run_saiga.sh` script. Edit python command as needed for script options. Demo dataset commands are at the top.
+  - Run: `bash run_saiga.sh` in terminal
 
 3. Check output results:
   - Outputs from Blast search are in `FinalResults/` (`allsamps_parsedout.txt` files)
@@ -275,8 +275,8 @@ bash ./Pipeline_scripts/guppy_basecalling_wrapper.sh 0_MinKNOW_rawdata/demo_mink
 ```
 3. Run rest of pipeline.
 
-You can simply run the pipeline with `python devo_wrapper.py [flags]`, but if you have many datasets or analyses to do, you can write all the python commands into the `pipe_batcher.sh` and run them all with `bash pipe_batcher.sh`.
-- *Edit `pipe_batcher.sh`:*
+You can simply run the pipeline with `python saiga_wrapper.py [flags]`, but if you have many datasets or analyses to do, you can write all the python commands into the `run_saiga.sh` and run them all with `bash run_saiga.sh`.
+- *Edit `run_saiga.sh`:*
     - This is the script that runs through all the pipeline steps for multiple datasets//analyses. You need to comment out the demo version commands (add ‘#’ to the beginning of the lines) so they aren't run.
     - Then edit the python command flags with appropriate dataset name, files, and parameter values. You need to set the following flags to `y` or `n` to tell the pipeline whether to:
       - `--rawNP`: concatenate raw basecalled fastq files, output NanoPlot stats
@@ -286,7 +286,7 @@ You can simply run the pipeline with `python devo_wrapper.py [flags]`, but if yo
       - `--clust`: cluster reads, generate consensus, blast to reference database
      - If you've run the top steps, and want to rerun the later steps, just switch the top ones to `n`. However, all steps have to be run at least once!
 ```
-bash pipe_batcher.sh
+bash run_saiga.sh
 ```
 
 4. Check your results in `FinalResults/`. :tada: :clap:
