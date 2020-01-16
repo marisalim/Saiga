@@ -810,10 +810,11 @@ def main():
             if arg_dict['subset'] == 'none':
                 print('No subsetting, continuing to next step...')
                 cdhit_seqsim_thresh = arg_dict['cdhitsim']
+                myseed = '' #dummy variable
                 read_clstr_cons(scripthome, toppath, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], arg_dict['perthresh'], cdhit_seqsim_thresh, arg_dict['subseed'])
 
                 blastdb=toppath + '/Blast_resources/' + str(arg_dict['db'])
-                blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb, arg_dict['subseed'])
+                blastoff(scripthome, toppath, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb, myseed)
 
                 stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path, arg_dict['datID'], samp_files, arg_dict['subset'], arg_dict['demult'], blastdb)
             else:
