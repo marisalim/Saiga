@@ -695,17 +695,18 @@ def stat_parse_fulldat(scripthome, toppath, basecallout_path, demultiplexed_path
 
 def main():
     print('Run pipeline! To see options, enter: ')
-    print('python devo_wrapper.py -h')
+    print('python saiga_wrapper.py -h')
     print('######################################################################')
 
     ## set up args
     parser = argparse.ArgumentParser(
-        description='''Developer master MinION barcoding pipeline for species ID script''',
-        epilog='''Example: python devo_wrapper.py
-        --dat 20190906 --samps 20190906_sample_list.txt
-        --rawNP n --demultgo n --filt n --subgo y --clust y
-        --demult qcat --qcat_minscore 99 --ONTbarcodekit PBC001
-        --qs 7 --buffer 100 --subset 100 --perthresh 0.1 --cdhitsim 0.8 --db Sept2019_Sanger_cytb.fasta''')
+        description='''Master script for SAIGA MinION barcoding pipeline for species ID''',
+        epilog='''Example: python saiga_wrapper.py
+        --dat demo --samps demo_sample_list.txt --rawNP n 
+        --demultgo n --filt n --subgo y --clust y --demult minibar 
+        --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 
+        --qs 7 --buffer 100 --subset none --subseed 100 --perthresh 0.1 
+        --cdhitsim 0.8 --db demo.fasta''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
     parser.add_argument('--rawNP', help='Option to generate NanoPlots for raw reads. Options: y, n', required=True)
