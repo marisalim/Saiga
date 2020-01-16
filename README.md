@@ -20,7 +20,7 @@ Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 
 -------------
 
-<img src='readme_imgs/clstrpipe2019workflow.png' width='500' height='700'>
+<img src='readme_imgs/saigaworkflow.png' width='500' height='700'>
 
 -------------
 # Table of contents
