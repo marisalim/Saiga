@@ -12,9 +12,9 @@ Our pipeline is called SAIGA to help bring awareness to conservation efforts for
 
 <sup>3</sup> https://newsroom.wcs.org/News-Releases/articleType/ArticleView/articleId/12926/BREAKING-NEWS-From-CITES-CoP18-on-Saiga-Antelope.aspx
 
-Saiga logo by Natalie Tam
+SAIGA logo by Natalie Tam
 
-#### Saiga was developed for and accompanies the paper:
+#### SAIGA was developed for and accompanies the paper:
 *"MinION-based DNA barcoding of preserved and non-invasively collected wildlife samples".*
 Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 
@@ -28,7 +28,7 @@ Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
     1. [Software installation advice](#installadvice)
 2. [Input files](#inputs)
 3. [Choose parameters](#params)
-4. [Usage: Run Saiga](#runpipe)
+4. [Usage: Run SAIGA](#runpipe)
     1. [Demo data](#demo)
     2. [Your data](#yourdat)
 5. [Pipeline output files](#outputs)
@@ -185,7 +185,7 @@ The pipeline is written to allow you to run different steps without rerunning al
 
 The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
 
-Saiga was written to implement demultiplexing by either qcat or MiniBar. qcat can only demultiplex (currently) with ONT index kits, while MiniBar can demultiplex ONT and custom indexes. To run qcat, you need the following flags: `--demultgo y --demult qcat --min_score [ ] --ONTbarcodekit [ ]`. To run MiniBar, you need the following flags: `--demultgo y --demult minibar --mbseqs [ ] --mb_idx_dist [ ] --mb_pr_dist [ ]`.
+SAIGA was written to implement demultiplexing by either qcat or MiniBar. qcat can only demultiplex (currently) with ONT index kits, while MiniBar can demultiplex ONT and custom indexes. To run qcat, you need the following flags: `--demultgo y --demult qcat --min_score [ ] --ONTbarcodekit [ ]`. To run MiniBar, you need the following flags: `--demultgo y --demult minibar --mbseqs [ ] --mb_idx_dist [ ] --mb_pr_dist [ ]`.
 
 The pipeline filters by read quality with a Phred score threshold and by read length with a buffer you set around the amplicon length provided in your input `sample_list.txt` file: `--filt y --qs [ ] --buffer [ ]`.
 
@@ -239,7 +239,7 @@ Flag | Description
 
 <a href="#top">Back to top</a>
 
-## Usage: Run Saiga! <a name="runpipe"></a>
+## Usage: Run SAIGA! <a name="runpipe"></a>
 1. Download this Github repository.
 1. Set up directories
 ```
