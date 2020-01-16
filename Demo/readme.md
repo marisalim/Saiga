@@ -17,4 +17,9 @@
 3. Check output results:
 - Outputs from Blast search are in `4_spID`, as [ ]_allsamps_parsedout.txt files
 
+# Example outputs
+
+Demo data uses first 20 basecalled fastq files of the 9/6/2019 dataset. Results are copied from _allsamps_parsedout.txt files from FinalResults/ folder. See SAIGA_demo_results.txt for demo results (demultiplexed with qcat or MiniBar, full demo data or 500 read subset).
+
+
 
