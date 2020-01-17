@@ -22,16 +22,26 @@ SAIGA logo by Natalie Tam
 
 -------------
 # Table of contents
-1. [Dependencies](#Dependencies)
-    1. [Software installation advice](#installadvice)
-2. [Input files](#inputs)
-3. [Choose parameters](#params)
-4. [Usage: Run SAIGA](#runpipe)
+1. [Getting started](#start)
+2. [Dependencies](#Dependencies)
+3. [Input files](#inputs)
+4. [Choose parameters](#params)
+5. [Usage: Run SAIGA](#runpipe)
     1. [Demo data](#demo)
     2. [Your data](#yourdat)
-5. [Pipeline output files](#outputs)
+6. [Pipeline output files](#outputs)
+7. [Software installation advice](#installadvice)
 
 [top](#top)
+
+## Getting started <a name="start"></a>
+
+1. Download this Github repository using the 'Clone or Download' green button at the top of the Github page. 
+2. Set up pipeline directories by running the following command within the downloaded repository.
+```
+python setuppipe.py
+```
+3. Install software. In the software installation advice <a name="installadvice"></a> section, we provide tips on installing sofware, however you should go to the software links for specific installation instructions.
 
 ## Software dependencies <a name="Dependencies"></a>
 - Guppy v3.1.5+781ed575
@@ -47,116 +57,6 @@ SAIGA logo by Natalie Tam
 - NCBI blast v2.8.1+
 
 *SAIGA scripts were written with Python3 and tested for MacOS.* 
-
-<a href="#top">Back to top</a>
-
-### Software installation advice <a name="installadvice"></a>
-One of the easiest ways to install python libraries and other software is to use conda install from Anaconda.
-- Download Anaconda3: https://www.anaconda.com/distribution/. We want Anaconda3 so that it downloads Python3. Follow installation instructions from website.
-- Once you have anaconda, configure the conda command to tell it where to look online for software. It does not matter what directory you’re in.
-  - `conda config --add channels bioconda`
-  - `conda config --add channels conda-forge`
-
-Note that this pipeline assumes the following software are called via `source ~/.bashrc`:
-  - guppy
-  - qcat
-  - MiniBar
-  - seqtk
-  - spoa
-  - cd-hit
-  - blast
-
-#### Basecall: Guppy
-https://community.nanoporetech.com/downloads
-
-- I downloaded Mac OSX version
-- `unzip ont-guppy-cpu_2.3.1_osx64.zip`
-- Add guppy to bashrc path (`export PATH=$PATH:[your path]/ont-guppy-cpu/bin`)
-
-#### Read filtering: Nanofilt
-https://github.com/wdecoster/nanofilt
-
-- `conda install -c bioconda nanofilt`
-- Runs as `NanoFilt <flags>`
-  - this was originally causing a problem before I added bioconda channel to conda
-
-#### Read stats: NanoPlot
-https://github.com/wdecoster/NanoPlot
-
-- Download the zipped folder of the github repository from green button that says ‘Clone or download’
-- Unzip folder: `unzip NanoPlot-master.zip`
-- Set up NanoPlot:
-  - `cd ./NanoPlot-master`
-  - `python setup.py develop`
-- Runs as `NanoPlot <inputs>`
-- Alternatively, use pip or conda installation commands (the above is a work-around since pip and conda timed out for me)
-
-#### Demultiplex: Qcat
-https://github.com/nanoporetech/qcat
-
-- follow qcat download instructions (I downloaded via `git clone` option (v1.1.0))
-- Add qcat to bashrc path (`export PATH=$PATH:[your path]/qcat`)
-
-#### Demultiplex: MiniBar
-https://github.com/calacademy-research/minibar
-
-- Download MiniBar: `curl https://raw.githubusercontent.com/calacademy-research/minibar/master/minibar.py`
-- Permit execution of MiniBar’s python script: `chmod 775 minibar.py`
-- minibar.py needs python library called edlib. Note that this differs from edlib, which is a command line version that works in Unix/Linux environment rather than Python.
-  - `conda install -c bioconda python-edlib`
-- Add MiniBar to bashrc path (`export PATH=$PATH:[your path]/MiniBar/`)
-
-#### Generate data subsets: seqtk
-https://github.com/lh3/seqtk
-
-- follow github installation instructions
-- Add to bashrc path (`export PATH=$PATH:[your path]/seqtk`)
-
-#### Cluster reads: isONclust
-https://github.com/ksahlin/isONclust
-
-- download: `pip install isONclust`
-
-#### Generate consensus sequence from isONclust read clusters: Spoa
-https://github.com/rvaser/spoa
-
-- `git clone --recursive https://github.com/rvaser/spoa spoa`
-- `cd spoa`
-- `mkdir build`
-- `cd build`
-- `cmake -DCMAKE_BUILD_TYPE=Release -Dspoa_build_executable=ON ..`
-- `make`
-- Add spoa to bashrc path (`export PATH=$PATH:[your path]/spoa/build/bin/`)
-
-#### Cluster spoa consensus sequences: cd-hit-est
-https://github.com/weizhongli/cdhit/wiki/2.-Installation
-
-- cd-hit-est needs gcc: `brew install gcc`
-- download cd-hit tar.gz file
-- `tar xvf cd-hit-v4.6.6-2016-0711.tar.gz --gunzip`
-- `cd cd-hit-v4.8.1-2019-0228`
-- `make CC=/usr/local/Cellar/gcc/9.1.0/bin/g++-9`
-- `make`
-- `cd cd-hit-auxtools/`
-- `make`
-- Add cd-hit to bashrc path (`export PATH=$PATH:[your path]/cd-hit-v4.8.1-2019-0228`)
-
-#### Error correcton: Medaka
-https://github.com/nanoporetech/medaka
-
-- `conda create -n medaka -c conda-forge -c bioconda medaka`
-- Medaka now has its own conda environment, which means you have to activate/deactivate the environment to run medaka:
-  - `conda activate medaka`
-  - `conda deactivate`
-- if you get an error about numpy, I had to roll back the version of a library called openblas.
-  - `conda install openblas=0.3.6`
-- Runs as `medaka_consensus`
-
-#### Species ID check: Blast search
-https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
-
-- Follow download instructions from NCBI
-- Add ncbi-blast to bashrc path (`export PATH=$PATH:[your path]/ncbi-blast-2.8.1+/bin`)
 
 <a href="#top">Back to top</a>
 
@@ -238,11 +138,6 @@ Flag | Description
 <a href="#top">Back to top</a>
 
 ## Usage: Run SAIGA! <a name="runpipe"></a>
-1. Download this Github repository using the 'Clone or Download' green button at the top of the Github page. 
-1. Set up directories
-```
-python setuppipe.py
-```
 
 ### Run demo data <a name="demo"></a>
 Note: The demo files have already been basecalled.
@@ -370,3 +265,113 @@ db_sp_name | Species ID of Blast database sequence match
 MkConsSeq | Medaka consensus sequence
 
 <a href="#top">Back to top</a> :fireworks:
+
+### Software installation advice <a name="installadvice"></a>
+One of the easiest ways to install python libraries and other software is to use conda install from Anaconda.
+- Download Anaconda3: https://www.anaconda.com/distribution/. We want Anaconda3 so that it downloads Python3. Follow installation instructions from website.
+- Once you have anaconda, configure the conda command to tell it where to look online for software. It does not matter what directory you’re in.
+  - `conda config --add channels bioconda`
+  - `conda config --add channels conda-forge`
+
+Note that this pipeline assumes the following software are called via `source ~/.bashrc`. You can add them with a text editor, e.g., `nano ~/.bashrc`.
+  - guppy
+  - qcat
+  - MiniBar
+  - seqtk
+  - spoa
+  - cd-hit
+  - blast
+
+#### Basecall: Guppy
+https://community.nanoporetech.com/downloads
+
+- I downloaded Mac OSX version
+- `unzip ont-guppy-cpu_2.3.1_osx64.zip`
+- Add guppy to bashrc path (`export PATH=$PATH:[your path]/ont-guppy-cpu/bin`)
+
+#### Read filtering: Nanofilt
+https://github.com/wdecoster/nanofilt
+
+- `conda install -c bioconda nanofilt`
+- Runs as `NanoFilt <flags>`
+  - this was originally causing a problem before I added bioconda channel to conda
+
+#### Read stats: NanoPlot
+https://github.com/wdecoster/NanoPlot
+
+- Download the zipped folder of the github repository from green button that says ‘Clone or download’
+- Unzip folder: `unzip NanoPlot-master.zip`
+- Set up NanoPlot:
+  - `cd ./NanoPlot-master`
+  - `python setup.py develop`
+- Runs as `NanoPlot <inputs>`
+- Alternatively, use pip or conda installation commands (the above is a work-around since pip and conda timed out for me)
+
+#### Demultiplex: Qcat
+https://github.com/nanoporetech/qcat
+
+- follow qcat download instructions (I downloaded via `git clone` option (v1.1.0))
+- Add qcat to bashrc path (`export PATH=$PATH:[your path]/qcat`)
+
+#### Demultiplex: MiniBar
+https://github.com/calacademy-research/minibar
+
+- Download MiniBar: `curl https://raw.githubusercontent.com/calacademy-research/minibar/master/minibar.py`
+- Permit execution of MiniBar’s python script: `chmod 775 minibar.py`
+- minibar.py needs python library called edlib. Note that this differs from edlib, which is a command line version that works in Unix/Linux environment rather than Python.
+  - `conda install -c bioconda python-edlib`
+- Add MiniBar to bashrc path (`export PATH=$PATH:[your path]/MiniBar/`)
+
+#### Generate data subsets: seqtk
+https://github.com/lh3/seqtk
+
+- follow github installation instructions
+- Add to bashrc path (`export PATH=$PATH:[your path]/seqtk`)
+
+#### Cluster reads: isONclust
+https://github.com/ksahlin/isONclust
+
+- download: `pip install isONclust`
+
+#### Generate consensus sequence from isONclust read clusters: Spoa
+https://github.com/rvaser/spoa
+
+- `git clone --recursive https://github.com/rvaser/spoa spoa`
+- `cd spoa`
+- `mkdir build`
+- `cd build`
+- `cmake -DCMAKE_BUILD_TYPE=Release -Dspoa_build_executable=ON ..`
+- `make`
+- Add spoa to bashrc path (`export PATH=$PATH:[your path]/spoa/build/bin/`)
+
+#### Cluster spoa consensus sequences: cd-hit-est
+https://github.com/weizhongli/cdhit/wiki/2.-Installation
+
+- cd-hit-est needs gcc: `brew install gcc`
+- download cd-hit tar.gz file
+- `tar xvf cd-hit-v4.6.6-2016-0711.tar.gz --gunzip`
+- `cd cd-hit-v4.8.1-2019-0228`
+- `make CC=/usr/local/Cellar/gcc/9.1.0/bin/g++-9`
+- `make`
+- `cd cd-hit-auxtools/`
+- `make`
+- Add cd-hit to bashrc path (`export PATH=$PATH:[your path]/cd-hit-v4.8.1-2019-0228`)
+
+#### Error correcton: Medaka
+https://github.com/nanoporetech/medaka
+
+- `conda create -n medaka -c conda-forge -c bioconda medaka`
+- Medaka now has its own conda environment, which means you have to activate/deactivate the environment to run medaka:
+  - `conda activate medaka`
+  - `conda deactivate`
+- if you get an error about numpy, I had to roll back the version of a library called openblas.
+  - `conda install openblas=0.3.6`
+- Runs as `medaka_consensus`
+
+#### Species ID check: Blast search
+https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+
+- Follow download instructions from NCBI
+- Add ncbi-blast to bashrc path (`export PATH=$PATH:[your path]/ncbi-blast-2.8.1+/bin`)
+
+<a href="#top">Back to top</a>
