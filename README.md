@@ -69,7 +69,7 @@ MarkerName,MarkerSeq,Type
 16s_FSn,AYHAGACSAGAAGACCC,primer
 NB01,CACAAAGACACCGACAACTTTCTT,ONTindex
 ```
-However the `_primerindex.txt` file currently has to be created manually.
+The `_primerindex.txt` file currently has to be created manually.
 
 - *Create a fasta file with your Sanger or other reference sequences, save it in the Blast_resources folder.* This file is used during the Blast step. The reliability of the Blast species identification depends on the quality of this reference database - curate carefully! Each sequence header should include the sample name, species identifier, and barcoding gene, separated by spaces.
 
@@ -78,17 +78,17 @@ However the `_primerindex.txt` file currently has to be created manually.
 ## Picking parameters <a name="params"></a>
 The pipeline is written to allow you to run different steps without rerunning all analyses over and over. The flags/options described below should be edited in the `run_saiga.sh` script. The top lines of this script run the demo dataset.
 
-The first time the pipeline is run, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
+The first time the pipeline is run on a given dataset, you'll need to analyze the raw basecalled files with `--rawNP`, demultiplex samples with `--demultgo`, and filter reads with `--filt`.
 
 SAIGA was written to implement demultiplexing by either qcat or MiniBar. qcat can only demultiplex (currently) with ONT index kits, while MiniBar can demultiplex ONT and custom indexes. To run qcat, you need the following flags: `--demultgo y --demult qcat --min_score [ ] --ONTbarcodekit [ ]`. To run MiniBar, you need the following flags: `--demultgo y --demult minibar --mbseqs [ ] --mb_idx_dist [ ] --mb_pr_dist [ ]`.
 
 The pipeline filters by read quality with a Phred score threshold and by read length with a buffer you set around the amplicon length provided in your input `sample_list.txt` file: `--filt y --qs [ ] --buffer [ ]`.
 
-Next, you can choose to analyze the full demultiplexed and filtered dataset (`--subgo y --subset none`) or subsets (`--subgo y --subset 500 --subseed 100` for 500 read random sample of the data) for each sample.
+Next, you can choose to analyze the full demultiplexed and filtered dataset (`--subgo y --subset none`) or subsets (`--subgo y --subset 500 --subseed 100` for sample of 500 reads with random seed 100) for each sample.
 
 To complete the pipeline analysis, use the `--clust` flag. You need to specify the demultiplexer (`--demult`), the subset (`--subset`), a threshold for the minimum percent of reads per isONclust cluster (`--perthresh`), a minimum cd-hit-est cluster similarity threshold (`--cdhitsim`), and a fasta file with sequences you'd like to compare consensus sequences to (`--db`): `--clust y --demult [ ] --subset [ ] --perthresh [ ] --cdhitsim [ ] --db [ ]`.
 
-You can run the pipeline steps in pieces - just set the required option flags to `n` if you don't want to run those steps.
+You can run the pipeline steps in pieces - just set the required option flags to `n` if you don't want to re-run those steps.
 
 Example commands:
 ```
@@ -111,8 +111,8 @@ Flag | Description
 --rawNP | Option to generate NanoPlots for raw reads. Options: y, n
 --demultgo | Option to demultiplex reads. Options: y, n. MiniBar requires --demult, --mbseqs, --mb_idx_dist, --mb_pr_dist. Qcat requires --demult, --qcat_minscore, --ONTbarcodekit flags
 --filt | Option to filter demultiplexed reads. Options: y, n. Requires --qs, --buffer flags
---subgo | Option to make random data subsets. Options: y, n. Requires --subset flag
---clust | Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --perthresh, --cdhitsim, --db flags
+--subgo | Option to make random data subsets. Options: y, n. Requires --subset, --subseed flags
+--clust | Option to cluster and Blast. Options: y, n. Requires --demult, --subset, --subseed, --perthresh, --cdhitsim, --db flags
 
 Additional flags:
 
@@ -162,13 +162,13 @@ Note: The demo files have already been basecalled.
 
 Example: 
 ```
-bash ./Pipeline_scripts/guppy_basecalling_wrapper.sh 0_MinKNOW_rawdata/demo_minknow/fast5 demo_guppybasecallouts ./
+bash ./Pipeline_scripts/guppy_basecalling_wrapper.sh 0_MinKNOW_rawdata/yourdataset_minknow/fast5 yourdataset_guppybasecallouts ./
 ```
 3. Run rest of pipeline.
 
 You can simply run the pipeline with `python saiga_wrapper.py [flags]`, but if you have many datasets or analyses to do, you can write all the python commands into the `run_saiga.sh` and run them all with `bash run_saiga.sh`.
 - *Edit `run_saiga.sh`:*
-    - This is the script that runs through all the pipeline steps for multiple datasets//analyses. You need to comment out the demo version commands (add ‘#’ to the beginning of the lines) so they aren't run.
+    - This is the script that runs through all the pipeline steps for multiple datasets and/or analyses. You need to comment out the demo version commands (add ‘#’ to the beginning of the lines) so they aren't run.
     - Then edit the python command flags with appropriate dataset name, files, and parameter values. You need to set the following flags to `y` or `n` to tell the pipeline whether to:
       - `--rawNP`: concatenate raw basecalled fastq files, output NanoPlot stats
       - `--demultgo`: demultiplex reads
@@ -185,6 +185,8 @@ bash run_saiga.sh
 <a href="#top">Back to top</a>
 
 ## SAIGA output files <a name="outputs"></a>
+
+Brief descriptions of output files in SAIGA directories.
 
 ### 1_basecalled
 Outputs generated by the `--rawNP` option:
@@ -212,8 +214,8 @@ Outputs generated by the `--clust` option:
     - Numbered directories are intermediate outputs
     - `sorted.fastq` intermediate file
     - `logfile.txt` contains output statistics about read error rate
-    - `final_cluster_origins.csv` contains 1 representative read per isONclust cluster
-    - `final_clusters.csv` contains all reads per isONclust cluster
+    - `final_cluster_origins.tsv` contains 1 representative read per isONclust cluster
+    - `final_clusters.tsv` contains all reads per isONclust cluster
   - Output files related to SPOA (generated by SAIGA):
     - `all_clstr_conseqs.fasta` is the input file for cd-hit-est with all the SPOA consensus sequences
   - Output files related to cd-hit-est:
@@ -225,7 +227,7 @@ Outputs generated by the `--clust` option:
     - `formedaka_singleline.fasta.firstclstr` contains the SPOA consensus sequence from majority read isONclust cluster, and will be used as input for Medaka; generated by SAIGA
     - intermediatee files generated by Medaka: `formedaka_singleline.firstclstr.fai, formedaka_singleline.firstclstr.mmi` 
   - Read cluster tallies (generated by SAIGA):
-    - `reads_per_cluster.txt` uses the `final_clusters.csv` file to tally the number, percent, and cumulative sum of reads per isONclust cluster
+    - `reads_per_cluster.txt` uses the `final_clusters.tsv` file to tally the number, percent, and cumulative sum of reads per isONclust cluster
     - `parsedclstr_table.txt` shows number, percent, and cumulative sum of reads per isONclust clusters that passed the `--perthresh` threshold, as well as their cd-hit-est cluster assignment. The total number of reads that go on to the Medaka step is tallied from this table. It only includes reads that are included in the top line cd-hit-est cluster. The proportion of reads used to generate the final consensus sequence comes from this table.
 
 ### 4_spID
@@ -244,8 +246,8 @@ Column | Description
 Sample | sample name
 Raw_count | total number of raw reads from entire sequence run
 Demultiplexed_count | number of demultiplexed filtered reads per sample
-isONclust_count | number of reads used for final consensus
-prop_demreads_inclstr | proportion of reads used for final consensus
+isONclust_count | number of reads used to build final consensus
+prop_demreads_inclstr | proportion of reads used to build final consensus
 query | Blast query (Medaka consensus sequence)
 genbank | Blast database match ID
 per_id | Blast percent sequence identity
