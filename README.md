@@ -1,4 +1,4 @@
-# SAIGA: A user-friendly DNA barcoding bioinformatics pipeline for MinION sequencing
+# SAIGA: A DNA barcoding bioinformatics pipeline for MinION sequencing
 
 <img align='left' src='/readme_imgs/saiga logo 3.5.jpg' width='200' height='200'>
 
