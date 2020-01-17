@@ -13,9 +13,9 @@ Our pipeline is called SAIGA to help bring awareness to conservation efforts for
 SAIGA logo by Natalie Tam
 
 -------------
-
-<img src='readme_imgs/saigaworkflow.png' width='500' height='700'>
-
+<p align="center">
+  <img src='readme_imgs/saigaworkflow.png' width='500' height='700'>
+</p>
 -------------
 # Table of contents
 1. [Getting started](#start)
