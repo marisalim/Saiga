@@ -16,6 +16,7 @@ SAIGA logo by Natalie Tam
 <p align="center">
   <img src='readme_imgs/saigaworkflow.png' width='500' height='700'>
 </p>
+
 -------------
 # Table of contents
 1. [Getting started](#start)
