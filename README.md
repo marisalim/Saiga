@@ -41,7 +41,7 @@ SAIGA logo by Natalie Tam
 ```
 python setuppipe.py
 ```
-3. Install software. In the software installation advice <a name="installadvice"></a> section, we provide tips on installing sofware, however you should go to the software links for specific installation instructions.
+3. Install software. In the [software installation advice](#installadvice) section, we provide tips on installing sofware, however you should go to the software links for specific installation instructions.
 
 ## Software dependencies <a name="Dependencies"></a>
 - Guppy v3.1.5+781ed575
