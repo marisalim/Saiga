@@ -20,13 +20,13 @@ SAIGA logo by Natalie Tam
 -------------
 # Table of contents
 1. [Getting started](#start)
-2. [Dependencies](#Dependencies)
-3. [Input files](#inputs)
-4. [Choose parameters](#params)
-5. [Usage: Run SAIGA](#runpipe)
-    1. [Demo data](#demo)
-    2. [Your data](#yourdat)
-6. [Pipeline output files](#outputs)
+2. [Software dependencies](#Dependencies)
+3. [Formatting input files](#inputs)
+4. [Picking parameters](#params)
+5. [Usage: Run SAIGA!](#runpipe)
+    1. [Run demo data](#demo)
+    2. [Run your data](#yourdat)
+6. [SAIGA output files](#outputs)
 7. [Software installation advice](#installadvice)
 
 [top](#top)
