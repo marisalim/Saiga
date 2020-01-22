@@ -1,6 +1,6 @@
 # ---------------------------------------------
 # Marisa Lim
-# this is developer version. user-friendly features in progress! logs would be nice..
+# this is the main SAIGA script, with all the various steps outlined below.
 
 # Steps:
 # 1. Basecall # run this outside of the script, since it takes so long. Here, just run the cat function for guppy output fastq files.
@@ -9,7 +9,6 @@
 # 3. NanoFilt by quality and length
 # 4. Build subsets - set flag for this,
 #     - options: none (will analyze full dataset demult reads), int (will build subsets using this num of reads)
-#     - if int, then decide whether you want a nested vs. random subset.
 # 5. NanoPlot demult and filtered reads
 # 6. Generate clusters, count reads per cluster
 # 7. Make consensus sequence from clusters
