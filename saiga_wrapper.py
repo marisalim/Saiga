@@ -1,6 +1,6 @@
 # ---------------------------------------------
 # Marisa Lim
-# this is the main SAIGA script, with all the various steps outlined below.
+# this is developer version. user-friendly features in progress! logs would be nice..
 
 # Steps:
 # 1. Basecall # run this outside of the script, since it takes so long. Here, just run the cat function for guppy output fastq files.
@@ -9,6 +9,7 @@
 # 3. NanoFilt by quality and length
 # 4. Build subsets - set flag for this,
 #     - options: none (will analyze full dataset demult reads), int (will build subsets using this num of reads)
+#     - if int, then decide whether you want a nested vs. random subset.
 # 5. NanoPlot demult and filtered reads
 # 6. Generate clusters, count reads per cluster
 # 7. Make consensus sequence from clusters
@@ -701,10 +702,10 @@ def main():
     parser = argparse.ArgumentParser(
         description='''Master script for SAIGA MinION barcoding pipeline for species ID''',
         epilog='''Example: python saiga_wrapper.py
-        --dat demo --samps demo_sample_list.txt --rawNP n 
-        --demultgo n --filt n --subgo y --clust y --demult minibar 
-        --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11 
-        --qs 7 --buffer 100 --subset none --subseed 100 --perthresh 0.1 
+        --dat demo --samps demo_sample_list.txt --rawNP n
+        --demultgo n --filt n --subgo y --clust y --demult minibar
+        --mbseqs demo_primerindex.txt --mb_idx_dist 2 --mb_pr_dist 11
+        --qs 7 --buffer 100 --subset none --subseed 100 --perthresh 0.1
         --cdhitsim 0.8 --db demo.fasta''')
     parser.add_argument('--datID', help='dataset identifer; typically yearmonthdate (e.g., 20190906 for Sept 6, 2019)', required=True)
     parser.add_argument('--samps', help='tab-delimited text file of sample names, barcode, barcode length, index name', required=True)
@@ -735,7 +736,6 @@ def main():
     scripthome = toppath + '/Pipeline_scripts'
     basecallout_path = toppath + '/1_basecalled/' + arg_dict['datID'] + '_guppybasecallouts'
     NanoPlot_basecallout_path = toppath + '/1_basecalled/' + arg_dict['datID'] + '_raw_NanoPlots/'
-    demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
 
     samp_files=pd.read_csv(toppath + '/2a_samp_lists/' + str(arg_dict['samps']), sep='\t', header=None)
     if len(samp_files.columns) != 4:
@@ -752,6 +752,7 @@ def main():
             pass # move on to next step
 
         if arg_dict['demultgo'] == 'y':
+            demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
             if arg_dict['demult'] == 'qcat':
                 barcode_kit = arg_dict['ONTbarcodekit']
                 my_qcat_minscore = arg_dict['qcat_minscore']
@@ -774,6 +775,7 @@ def main():
             pass
 
         if arg_dict['filt'] == 'y':
+            demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
             read_len_buffer = arg_dict['buffer']
             min_filter_quality = arg_dict['qs']
             filter_demultiplexed_reads(demultiplexed_path, arg_dict['datID'], samp_files, min_filter_quality, read_len_buffer)
@@ -781,6 +783,7 @@ def main():
             pass
 
         if arg_dict['subgo'] == 'y':
+            demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
             if arg_dict['subset'] == 'none':
                 print('No subsetting, continuing to next step...')
                 NanoPlot_demultiplexedout_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/' + arg_dict['datID'] + '_demultiplexed_NanoPlots/'
@@ -806,6 +809,7 @@ def main():
             pass
 
         if arg_dict['clust'] == 'y':
+            demultiplexed_path = toppath + '/2b_demultiplexed/' + arg_dict['datID'] + '_' + arg_dict['demult'] + '_demultiplexouts/'
             if arg_dict['subset'] == 'none':
                 print('No subsetting, continuing to next step...')
                 cdhit_seqsim_thresh = arg_dict['cdhitsim']
