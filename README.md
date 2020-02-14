@@ -4,7 +4,7 @@
 
 The SAIGA pipeline was designed for processing and analyzing Oxford Nanopore Technologies (ONT) MinION DNA-barcoding sequence data. 
 
-SAIGA was developed for and accompanies the in prep paper: *"MinION-based DNA barcoding of preserved and non-invasively collected wildlife samples".* Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
+SAIGA was developed for and accompanies the preprint: *"MinION-based DNA barcoding of preserved and non-invasively collected wildlife samples".* Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
 
 Preprint available on bioRxiv: https://doi.org/10.1101/2020.01.29.925081
 
