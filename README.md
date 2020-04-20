@@ -4,9 +4,9 @@
 
 The SAIGA pipeline was designed for processing and analyzing Oxford Nanopore Technologies (ONT) MinION DNA-barcoding sequence data. 
 
-SAIGA was developed for and accompanies the preprint: *"MinION-based DNA barcoding of preserved and non-invasively collected wildlife samples".* Adeline Seah*, Marisa Lim*, Denise McAloose, Stefan Prost, Tracie Seimon
+SAIGA was developed for and accompanies the paper: Seah, A.; Lim, M.C.; McAloose, D.; Prost, S.; Seimon, T.A. *MinION-Based DNA Barcoding of Preserved and Non-Invasively Collected Wildlife Samples*. Genes 2020, 11, 445. 
 
-Preprint available on bioRxiv: https://doi.org/10.1101/2020.01.29.925081
+Available: https://www.mdpi.com/2073-4425/11/4/445
 
 Our pipeline is called SAIGA to help bring awareness to conservation efforts for the Critically endangered Saiga (*Saiga tatarica*). Saiga populations are threatened by habitat loss and fragmentation, illegal wildlife trade (meat, horn), and disease. Consequently, in addition to population size crashes, the sex ratio has been skewed due to preferential hunting of males for their horns. Saiga horn is the primary component of several Traditional Chinese Medicines that claim to detox and treat colds and lung disease; however saiga horn has no scientifically recognized medicinal value <sup>1,2</sup>. As of 2019, the CITES Conference of Parties voted to keep saiga on the CITES Appendix II list, but there is now a zero quota for the international trade on wild saiga horn <sup>3</sup>.  
 
