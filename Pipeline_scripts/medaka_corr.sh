@@ -7,7 +7,13 @@
 # isONclust and cd-hit steps
 # ------------------------------------------------------------
 
+# set conda path - depending on OS, you may need to change this path
+# this path works on Macs
 source /anaconda3/etc/profile.d/conda.sh
+# The default path on Ubuntu is:
+# source ~/anaconda3/etc/profile.d/conda.sh
+
+# activate medaka
 conda activate medaka
 
 input_demult=$1
