@@ -57,6 +57,8 @@ python setuppipe.py
 
 *SAIGA scripts were written with Python3 and tested for MacOS.* 
 
+For Ubuntu, you likely need to edit the conda path to use medaka. See path notes to edit in [medaka script](./Pipeline_scripts/medaka_corr.sh).
+
 <a href="#top">Back to top</a>
 
 ## Formatting input files <a name="inputs"></a>
