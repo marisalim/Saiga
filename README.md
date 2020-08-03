@@ -33,7 +33,7 @@ SAIGA logo by Natalie Tam
 
 ## Getting started <a name="start"></a>
 
-**Note: please post an [issue](https://github.com/marisalim/Saiga/issues) if you need help!**
+**Note: please post an [issue](https://github.com/marisalim/Saiga/issues/new) if you need help!**
 
 1. Download this Github repository using the 'Clone or Download' green button at the top of the Github page. 
 2. Set up pipeline directories by running the following command within the downloaded repository.
