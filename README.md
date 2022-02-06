@@ -31,9 +31,10 @@ SAIGA logo by Natalie Tam
 
 [top](#top)
 
-## Getting started <a name="start"></a>
 
-**Note: please post an [issue](https://github.com/marisalim/Saiga/issues/new) if you need help!**
+> **Update Jan 2022: Thanks for stopping by! The SAIGA pipeline is no longer in active development, so there may be software dependency updates that require refinement of the parser scripts (see [issues](https://github.com/marisalim/Saiga/issues/new)). For a similar clustering pipeline, please check out [NGSpeciesID](https://github.com/ksahlin/NGSpeciesID), which grew from the development of SAIGA.**
+
+## Getting started <a name="start"></a>
 
 1. Download this Github repository using the 'Clone or Download' green button at the top of the Github page. 
 2. Set up pipeline directories by running the following command within the downloaded repository.
