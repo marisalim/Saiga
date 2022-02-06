@@ -64,7 +64,7 @@ if cdhit_df.empty == False:
         # print(myiso)
         for j in range(0, myiso.count('>')):
             clstrID = myiso.split('|Consensus...')[j].split('>clstr')[1]
-            # print(clstrID
+            # print(clstrID)
             myls.append(clstrID)
             myls2.append(mycdhit.split('Cluster_')[1])
     cdhit_df2 = pd.DataFrame(list(zip(myls, myls2)), columns=['IsoID', 'cdhitID'])
