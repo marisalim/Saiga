@@ -32,7 +32,7 @@ SAIGA logo by Natalie Tam
 [top](#top)
 
 
-> **Update Jan 2022: Thanks for stopping by! The SAIGA pipeline is no longer in active development, so there may be software dependency updates that require refinement of the parser scripts (see [issues](https://github.com/marisalim/Saiga/issues/new)). For a similar clustering pipeline, please check out [NGSpeciesID](https://github.com/ksahlin/NGSpeciesID), which grew from the development of SAIGA.**
+> **Update Jan 2022:** Thanks for stopping by! The SAIGA pipeline is no longer in active development, so there may be software dependency updates that require refinement of the parser scripts (see [issues](https://github.com/marisalim/Saiga/issues)). For a similar clustering pipeline, please check out [NGSpeciesID](https://github.com/ksahlin/NGSpeciesID), which grew from the development of SAIGA.
 
 ## Getting started <a name="start"></a>
 
